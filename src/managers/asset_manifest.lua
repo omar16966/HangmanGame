@@ -9,9 +9,12 @@ return {
     fonts = {
         -- PixelAE is drawn on a 10px grid: size 10 = 1 font pixel per screen pixel,
         -- size 20 = 2x (titles). Other sizes would blur the pixels.
-        regular = { path = "assets/PixelAE/PixelAE-Regular.ttf", size = 10, required = true },
-        bold = { path = "assets/PixelAE/PixelAE-Bold.ttf", size = 10, required = true },
-        title = { path = "assets/PixelAE/PixelAE-Bold.ttf", size = 20, required = true },
+        -- lineHeight: distance between wrapped lines in pixels. The font box is
+        -- 15px (10 ascent + 5 descent); Arabic glyphs reach 12px above the
+        -- baseline (أ) and 5px below (ع), 13px keeps lines compact and readable.
+        regular = { path = "assets/PixelAE/PixelAE-Regular.ttf", size = 10, lineHeight = 13, required = true },
+        bold = { path = "assets/PixelAE/PixelAE-Bold.ttf", size = 10, lineHeight = 13, required = true },
+        title = { path = "assets/PixelAE/PixelAE-Bold.ttf", size = 20, lineHeight = 26, required = true },
     },
 
     images = {

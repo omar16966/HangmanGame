@@ -9,6 +9,8 @@
 --   love . --quit-after 2              quit automatically
 --   love . --overlay                   show the debug overlay
 --   love . --fresh                     ignore the existing save (testing)
+--   love . --lang en                   force the interface language
+--   love . --page 2                    page passed to the first state (diagnostics)
 
 local Cli = {}
 
@@ -41,6 +43,12 @@ function Cli.parse(args)
             options.overlay = true
         elseif a == "--fresh" then
             options.fresh = true
+        elseif a == "--lang" and args[i + 1] then
+            options.lang = args[i + 1]
+            i = i + 1
+        elseif a == "--page" and args[i + 1] then
+            options.page = tonumber(args[i + 1])
+            i = i + 1
         end
         i = i + 1
     end

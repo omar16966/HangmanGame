@@ -4,6 +4,7 @@
 local State = require("src.states.state")
 local StateManager = require("src.core.state_manager")
 local Assets = require("src.managers.asset_manager")
+local Localization = require("src.managers.localization_manager")
 local Palette = require("src.graphics.palette")
 local Renderer = require("src.graphics.renderer")
 local Logger = require("src.core.logger")
@@ -11,9 +12,10 @@ local Logger = require("src.core.logger")
 local BootState = State.extend("boot")
 
 -- Each step is { name, fn(params) }. Later phases add save loading,
--- localization, audio and shaders here.
+-- audio and shaders here.
 local steps = {
     { "assets", function() Assets.load() end },
+    { "localization", function() Localization.init() end },
 }
 
 function BootState:enter(params)
@@ -33,7 +35,7 @@ function BootState:update(dt)
         return
     end
     Logger.info("Boot finished in %.0f ms", (love.timer.getTime() - self.startTime) * 1000)
-    StateManager.switch(self.params.nextState)
+    StateManager.switch(self.params.nextState, self.params.nextParams)
 end
 
 function BootState:draw()

@@ -52,8 +52,13 @@ function Game.load(args)
     end)
 
     registerStates()
+    if options.lang then
+        Settings.set("interfaceLanguage", options.lang)
+    end
+
     StateManager.switch(Constants.States.BOOT, {
         nextState = options.state or Config.startState,
+        nextParams = { page = options.page },
         fresh = options.fresh,
     })
 end

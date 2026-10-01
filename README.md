@@ -3,7 +3,7 @@
 A pixel-art Hangman word puzzle game made with **LÖVE2D + Lua**, with an
 Arabic (right-to-left) and English interface and Arabic and English puzzles.
 
-> **Development status:** Phase 1 (Foundation) is complete. See
+> **Development status:** Phases 1 (Foundation) and 2 (Localization) are complete. See
 > [Development phases](#development-phases). This README grows with each phase.
 
 ## Requirements
@@ -42,12 +42,15 @@ assets/                  art, audio, fonts, shaders (see ASSETS.md)
 src/core/                config, constants, logger, utils, input, settings,
                          state manager, game loop, debug overlay, CLI options
 src/graphics/            renderer (virtual canvas + scaling), palette
-src/managers/            asset manager + asset manifest
+src/managers/            asset manager + manifest, localization manager
+src/localization/        text API, Arabic shaper, bidi, UTF-8 helpers
 src/states/              game states (boot, diagnostics, ... more per phase)
-src/ui/ gameplay/ localization/   filled in by the next phases
+src/ui/ gameplay/        filled in by the next phases
+data/localization/       interface languages and dictionaries (ar, en)
 data/                    puzzle and category data (Phase 3 / 9)
 lib/                     third-party libraries (none yet)
-tools/                   development scripts (headless checks)
+tests/                   unit tests, reference comparison, test runner
+tools/                   development scripts (headless display checks)
 ```
 
 ### Architecture in short
@@ -69,6 +72,10 @@ tools/                   development scripts (headless checks)
   change listeners. Saved to disk in Phase 5.
 - **Logger** (`src/core/logger.lua`): `Logger.info/warning/error/debug`, plus
   `warningOnce` for anything that could repeat every frame.
+- **Localization** (`src/managers/localization_manager.lua` +
+  `src/localization/`): `L("KEY")` for strings and `Text.draw` /
+  `Localization.draw` for drawing. Arabic is shaped and reordered correctly;
+  see [LOCALIZATION.md](LOCALIZATION.md).
 
 ## Configuration
 
@@ -84,12 +91,28 @@ love . --size 1920x1080          # start with this window size
 love . --fullscreen
 love . --state diagnostics       # first state after boot
 love . --overlay                 # show the debug overlay
+love . --lang en                 # force the interface language (ar / en)
+love . --page 2                  # diagnostics: open the text test page
 love . --screenshot shot.png --screenshot-after 1 --quit-after 1.5
 ```
 
 Screenshots are saved in the LÖVE save folder
 (`%APPDATA%\LOVE\pixel_hangman` on Windows,
 `~/.local/share/love/pixel_hangman` on Linux).
+
+In the diagnostics screen, **Tab** switches between the display page and the
+text page, and **L** toggles the interface language.
+
+### Tests
+
+```sh
+tests/run_all.sh          # everything below
+luajit tests/unit_tests.lua
+python3 tests/compare_reference.py   # Arabic shaping vs HarfBuzz, bidi vs python-bidi
+tools/run_checks.sh       # pixel-perfect screenshots at 7 window sizes
+```
+
+Requirements: `luajit`, `xvfb-run`, Python 3 with `pillow uharfbuzz python-bidi fonttools`.
 
 `tools/run_checks.sh [state]` starts the game headless (using xvfb) at
 320×180, 640×360, 960×540, 1280×720, 1920×1080, 1366×768 and 1000×700. It
@@ -101,8 +124,8 @@ sharp square block and that the black bars are clean.
 | # | Phase | Status |
 |---|---|---|
 | 1 | Foundation: renderer, 320×180 canvas, integer scaling, states, input, assets, config, logging | ✅ Done |
-| 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ⏳ Next |
-| 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | |
+| 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ✅ Done |
+| 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ⏳ Next |
 | 4 | Main UI: menus, gameplay screen, pause, results, settings | |
 | 5 | Persistence: saves, profile, statistics, scores, continue | |
 | 6 | Progression: XP, levels, streaks, achievements | |
@@ -114,4 +137,5 @@ sharp square block and that the black bars are clean.
 ## Documentation
 
 - `ASSETS.md`: every art and audio file the game expects
-- `PUZZLES.md`, `LOCALIZATION.md`, `SAVE_FORMAT.md`: added in later phases
+- `LOCALIZATION.md`: Arabic shaping, RTL/bidi, adding translations and languages
+- `PUZZLES.md`, `SAVE_FORMAT.md`: added in later phases

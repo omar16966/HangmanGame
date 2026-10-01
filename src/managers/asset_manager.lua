@@ -56,6 +56,9 @@ local function loadFont(key, def)
     end
     font:setFilter("nearest", "nearest")
     font:setFallbacks(fallback)
+    if def.lineHeight then
+        font:setLineHeight(def.lineHeight / font:getHeight())
+    end
     return font
 end
 
