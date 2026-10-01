@@ -21,6 +21,7 @@ local function registerStates()
     local S = Constants.States
     StateManager.register(S.BOOT, require("src.states.boot_state"))
     StateManager.register(S.DIAGNOSTICS, require("src.states.dev.diagnostics_state"))
+    StateManager.register(S.GAMEPLAY, require("src.states.gameplay_state"))
 end
 
 function Game.load(args)
@@ -54,6 +55,12 @@ function Game.load(args)
     registerStates()
     if options.lang then
         Settings.set("interfaceLanguage", options.lang)
+    end
+    for _, pair in ipairs(options.settings or {}) do
+        Settings.set(pair[1], pair[2])
+    end
+    if options.seed then
+        love.math.setRandomSeed(options.seed)
     end
 
     StateManager.switch(Constants.States.BOOT, {

@@ -80,7 +80,59 @@ Config.logging = {
     historySize = 200,      -- lines kept in memory for the debug overlay
 }
 
+-- Gameplay -----------------------------------------------------------------------------------
+
+Config.gameplay = {
+    -- Default number of wrong guesses before a round is lost (per-difficulty
+    -- values below override it).
+    maxWrongAttempts = 6,
+    -- Seconds to wait after the last guess before showing the round result,
+    -- so the final animation can be seen (the loss animation is longer).
+    resultDelayWin = 1.8,
+    resultDelayLoss = 3.2,
+}
+
+-- Per-difficulty rules. Puzzles also carry a difficulty; the selection
+-- prefers puzzles matching the chosen one.
+Config.difficulty = {
+    order = { "easy", "normal", "hard" },
+    easy = { maxWrongAttempts = 8, scoreMultiplier = 1.0, xpMultiplier = 1.0 },
+    normal = { maxWrongAttempts = 6, scoreMultiplier = 1.5, xpMultiplier = 1.5 },
+    hard = { maxWrongAttempts = 5, scoreMultiplier = 2.0, xpMultiplier = 2.0 },
+}
+
+-- Score values (see src/gameplay/scoring.lua for the formula).
+Config.score = {
+    correctLetter = 10,          -- per revealed letter cell found by guessing
+    completePuzzle = 100,        -- base score for solving
+    remainingAttemptBonus = 20,  -- per unused wrong attempt when solved
+    wrongGuessPenalty = 5,       -- per wrong guess
+    textHintPenalty = 50,
+    revealHintPenalty = 100,
+    speedBonusMax = 100,         -- full bonus when solved instantly...
+    speedSecondsPerLetter = 6,   -- ...falling to 0 after this many seconds per letter
+}
+
+-- How guesses are compared with answers. The answer is always displayed
+-- exactly as written; these rules only affect matching.
+Config.normalization = {
+    arabic = {
+        alefVariants = true,   -- أ إ آ ٱ  -> ا
+        alefMaqsura = false,   -- ى -> ي
+        taMarbuta = false,     -- ة -> ه
+        hamzaCarriers = false, -- ؤ -> و , ئ -> ي
+    },
+}
+
+Config.puzzles = {
+    -- Folders scanned for puzzle packs (trusted Lua data, see PUZZLES.md).
+    folders = { "data/puzzles/arabic", "data/puzzles/english" },
+    -- How many recently played puzzle IDs are avoided when picking.
+    recentHistorySize = 30,
+}
+
 -- First state entered after the boot state finishes loading.
-Config.startState = "diagnostics"
+-- (The main menu replaces this in Phase 4.)
+Config.startState = "gameplay"
 
 return Config

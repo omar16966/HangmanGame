@@ -109,6 +109,8 @@ end
 -- options.stripMarks  remove harakat/diacritics (for fonts without them)
 -- options.hasGlyph    function(cp) -> bool; forms missing from the font
 --                     fall back to the plain letter instead of an empty box
+-- options.noLigatures keep lam and alef as two letters (used by the puzzle
+--                     word display, where every letter has its own cell)
 function Shaper.shape(cps, options)
     options = options or {}
     local hasGlyph = options.hasGlyph
@@ -161,7 +163,7 @@ function Shaper.shape(cps, options)
             else
                 local p, q = prevIndex[i], nextIndex[i]
                 local joinsPrev = canJoinPrev(t) and p ~= nil and canJoinNext(types[p])
-                local ligature = cp == LAM and q ~= nil and LAM_ALEF[input[q]]
+                local ligature = not options.noLigatures and cp == LAM and q ~= nil and LAM_ALEF[input[q]]
 
                 if ligature then
                     local form = joinsPrev and ligature[2] or ligature[1]
@@ -192,6 +194,18 @@ function Shaper.shape(cps, options)
                 end
             end
         end
+    end
+    return out
+end
+
+-- For each codepoint, whether it visually connects to the next one
+-- (used to draw joining strokes between separate letter cells).
+function Shaper.connections(cps)
+    local out = {}
+    for i = 1, #cps do
+        local a = joiningType(cps[i])
+        local b = cps[i + 1] and joiningType(cps[i + 1]) or "U"
+        out[i] = canJoinNext(a) and canJoinPrev(b)
     end
     return out
 end

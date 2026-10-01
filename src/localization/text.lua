@@ -84,6 +84,23 @@ function Text.getLineHeight(font)
     return floor(font:getHeight() * font:getLineHeight() + 0.5)
 end
 
+-- Distance from the top of a line to its visual middle. To center one line
+-- of text on a point: Text.draw(str, x, centerY - Text.getCenterOffset(font, str)).
+-- Latin capitals sit around 60% of the ascent; the body of Arabic letters
+-- sits lower (around 80%), so Arabic strings get a larger offset.
+function Text.getCenterOffset(font, str)
+    local factor = 0.6
+    if str and str:find("[\216-\219]") then -- UTF-8 lead bytes of U+0600-06FF
+        factor = 0.8
+    end
+    return floor(font:getAscent() * factor + 0.5)
+end
+
+-- True when the font (or its fallbacks) can draw the codepoint.
+function Text.hasGlyph(font, cp)
+    return getFontInfo(font).hasGlyph(cp)
+end
+
 -- Layout --------------------------------------------------------------------------------------
 
 local function measure(font, cps, first, last)

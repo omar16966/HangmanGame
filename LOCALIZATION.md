@@ -137,13 +137,37 @@ The dictionaries are trusted Lua files bundled with the game. Content made by
 players, such as words they add themselves, is stored as data and never run as
 code.
 
-## Puzzle normalization (Phase 3)
+## Puzzle normalization
 
-Comparing a guess with the answer will use a configurable normalization layer:
+Guesses are compared with the answer through `src/gameplay/normalizer.lua`.
+The answer is always **displayed** exactly as written; normalization only
+affects matching.
 
-- English: guesses are not case-sensitive (`a` == `A`).
-- Arabic: diacritics are ignored. By default أ إ آ count as ا. ى → ي and
-  ة → ه are optional rules.
-- The answer is always displayed exactly as written.
+- English: guesses ignore case (`a` == `A`). Only A–Z are letters to guess.
+- Arabic:
+  - Diacritics (fatha, damma, kasra, shadda, sukun, tanween …) and tatweel
+    are ignored completely.
+  - The rules in `Config.normalization.arabic` can be switched on or off:
 
-This section will be completed when Phase 3 is implemented.
+    | Rule | Default | Effect |
+    |---|---|---|
+    | `alefVariants` | on | أ إ آ ٱ match ا |
+    | `alefMaqsura` | off | ى matches ي |
+    | `taMarbuta` | off | ة matches ه |
+    | `hamzaCarriers` | off | ؤ matches و, ئ matches ي |
+
+  - The on-screen keyboard follows the rules automatically. A letter merged
+    into another one gets no key, and when `alefVariants` is off, the
+    أ إ آ keys appear.
+- Physical keyboard: letters arrive through `love.textinput`, so an Arabic
+  OS keyboard layout works directly. If the OS layout is still English during
+  an Arabic puzzle, each key is mapped to the Arabic letter in the same
+  position on a standard Arabic keyboard (`data/keyboards.lua`, `latinToArabic`).
+
+### Arabic letters in the puzzle display
+
+Each letter of an Arabic answer has its own cell, from right to left. A
+revealed letter is drawn in the connected form it has in the word, and when
+two neighbouring letters are both revealed, the joining stroke between their
+cells is drawn too. Lam-alef is shown as two cells (two letters to guess),
+not as the ligature.

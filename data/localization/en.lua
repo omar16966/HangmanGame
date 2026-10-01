@@ -58,6 +58,14 @@ return {
     HINT_REVEAL = "Reveal a Letter",
     HINT_COST = "-{points} points",
     NO_HINT = "This puzzle has no hint.",
+    SCORE_VALUE = "Score: {value}",
+    ALREADY_GUESSED = "You already tried this letter.",
+    TYPE_ARABIC = "Use Arabic letters for this puzzle.",
+    TYPE_ENGLISH = "Use English letters for this puzzle.",
+    NOTHING_TO_REVEAL = "No letter can be revealed now.",
+    NO_PUZZLES = "No puzzles available for this choice.",
+    NEXT_ROUND_PROMPT = "Press Enter or click for the next puzzle",
+    ROUND_POINTS = "+{points}",
 
     -- Results
     RESULT_WIN = "Well done!",

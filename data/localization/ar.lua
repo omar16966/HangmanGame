@@ -60,6 +60,14 @@ return {
     HINT_REVEAL = "كشف حرف",
     HINT_COST = "-{points} نقطة",
     NO_HINT = "لا يوجد تلميح لهذا اللغز.",
+    SCORE_VALUE = "النقاط: {value}",
+    ALREADY_GUESSED = "جربت هذا الحرف من قبل.",
+    TYPE_ARABIC = "استخدم الحروف العربية لهذا اللغز.",
+    TYPE_ENGLISH = "استخدم الحروف الإنجليزية لهذا اللغز.",
+    NOTHING_TO_REVEAL = "لا يمكن كشف حرف الآن.",
+    NO_PUZZLES = "لا توجد ألغاز متاحة لهذا الاختيار.",
+    NEXT_ROUND_PROMPT = "اضغط Enter أو انقر للغز التالي",
+    ROUND_POINTS = "+{points}",
 
     -- Results
     RESULT_WIN = "أحسنت!",

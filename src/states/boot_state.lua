@@ -5,6 +5,9 @@ local State = require("src.states.state")
 local StateManager = require("src.core.state_manager")
 local Assets = require("src.managers.asset_manager")
 local Localization = require("src.managers.localization_manager")
+local PuzzleManager = require("src.managers.puzzle_manager")
+local Normalizer = require("src.gameplay.normalizer")
+local Config = require("src.core.config")
 local Palette = require("src.graphics.palette")
 local Renderer = require("src.graphics.renderer")
 local Logger = require("src.core.logger")
@@ -16,6 +19,10 @@ local BootState = State.extend("boot")
 local steps = {
     { "assets", function() Assets.load() end },
     { "localization", function() Localization.init() end },
+    { "puzzles", function()
+        Normalizer.configure(Config.normalization.arabic)
+        PuzzleManager.init()
+    end },
 }
 
 function BootState:enter(params)

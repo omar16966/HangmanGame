@@ -3,7 +3,7 @@
 A pixel-art Hangman word puzzle game made with **LÖVE2D + Lua**, with an
 Arabic (right-to-left) and English interface and Arabic and English puzzles.
 
-> **Development status:** Phases 1 (Foundation) and 2 (Localization) are complete. See
+> **Development status:** Phases 1 (Foundation), 2 (Localization) and 3 (Core gameplay) are complete. See
 > [Development phases](#development-phases). This README grows with each phase.
 
 ## Requirements
@@ -23,13 +23,17 @@ Run it from the project folder, or drag the folder onto `love.exe` on Windows.
 
 | Key | Action |
 |---|---|
-| Enter / Space | Confirm |
-| Esc / Backspace / right mouse button | Back |
-| Arrow keys | Navigate |
-| Esc / P | Pause (in gameplay) |
+| Letters (keyboard) | Guess a letter. In Arabic puzzles, an English keyboard layout is mapped to the Arabic letter in the same position. |
+| Mouse click | Press a key on the on-screen keyboard or a button |
+| Arrow keys + Enter / Space | Move over the on-screen keyboard and press the focused key |
+| Enter / click | Next puzzle (after a round) |
 | F11 or Alt+Enter | Toggle fullscreen |
-| F3 | Debug overlay *(debug builds only)* |
+| F3 | Debug overlay *(debug builds only)*: shows the current puzzle and its answer |
 | F2 | Diagnostics screen *(debug builds only)* |
+
+The game currently starts directly in gameplay (`Config.startState`). The
+main menu, pause menu (Esc), category selection and result screen come in
+Phase 4.
 
 All bindings are in `Config.input` (`src/core/config.lua`).
 
@@ -44,10 +48,15 @@ src/core/                config, constants, logger, utils, input, settings,
 src/graphics/            renderer (virtual canvas + scaling), palette
 src/managers/            asset manager + manifest, localization manager
 src/localization/        text API, Arabic shaper, bidi, UTF-8 helpers
-src/states/              game states (boot, diagnostics, ... more per phase)
-src/ui/ gameplay/        filled in by the next phases
+src/managers/puzzle_manager.lua  puzzle loading, validation, selection
+src/gameplay/            round rules, normalizer, scoring, session, scene,
+                         character physics, word display
+src/ui/                  button, virtual keyboard, skin (9-slice), icons
+src/graphics/            + rope physics, placeholders (code-drawn art), 9-slice
+src/states/              game states (boot, gameplay, diagnostics, ...)
 data/localization/       interface languages and dictionaries (ar, en)
-data/                    puzzle and category data (Phase 3 / 9)
+data/puzzles/            puzzle packs (arabic/, english/), see PUZZLES.md
+data/categories.lua      categories, data/keyboards.lua keyboard layouts
 lib/                     third-party libraries (none yet)
 tests/                   unit tests, reference comparison, test runner
 tools/                   development scripts (headless display checks)
@@ -74,6 +83,11 @@ tools/                   development scripts (headless display checks)
   change listeners. Saved to disk in Phase 5.
 - **Logger** (`src/core/logger.lua`): `Logger.info/warning/error/debug`, plus
   `warningOnce` for anything that could repeat every frame.
+- **Gameplay** (`src/gameplay/`): `Round` holds the rules of one puzzle
+  (guesses, attempts, hints, win/loss, save/restore) and has no drawing code.
+  `Scoring` computes points from `Config.score`. `Scene` and `Character`
+  animate the wooden frame and the character with spring and rope physics.
+  `WordDisplay` draws the answer cells.
 - **Localization** (`src/managers/localization_manager.lua` +
   `src/localization/`): `L("KEY")` for strings and `Text.draw` /
   `Localization.draw` for drawing. Arabic is shaped and reordered correctly;
@@ -83,6 +97,24 @@ tools/                   development scripts (headless display checks)
 
 Every tunable value is in `src/core/config.lua`. Set `Config.debug = false`
 for release builds.
+
+## How scoring works
+
+All values are in `Config.score` and `Config.difficulty`
+(`src/gameplay/scoring.lua`):
+
+```text
+round score = ( 100 for solving
+              + 10 per letter you found
+              + 20 per unused attempt          (solved only)
+              + speed bonus up to 100          (solved only; falls to 0 after 6 s per letter)
+              - 5 per wrong guess
+              - 50 for the text hint, 100 per revealed letter )
+              x difficulty multiplier (1.0 / 1.5 / 2.0), never below 0
+```
+
+Repeated guesses cost nothing. The score in the top bar is the session total
+plus the points of the round in progress.
 
 ## Development tools
 
@@ -95,6 +127,8 @@ love . --state diagnostics       # first state after boot
 love . --overlay                 # show the debug overlay
 love . --lang en                 # force the interface language (ar / en)
 love . --page 2                  # diagnostics: open the text test page
+love . --set puzzleLanguage=en   # change any setting (repeatable)
+love . --seed 42                 # fixed random seed
 love . --screenshot shot.png --screenshot-after 1 --quit-after 1.5
 ```
 
@@ -110,6 +144,7 @@ text page, and **L** toggles the interface language.
 ```sh
 tests/run_all.sh          # everything below
 luajit tests/unit_tests.lua
+luajit tests/gameplay_tests.lua      # rules, normalization, scoring, puzzles
 python3 tests/compare_reference.py   # Arabic shaping vs HarfBuzz, bidi vs python-bidi
 tools/run_checks.sh       # pixel-perfect screenshots at 7 window sizes
 ```
@@ -127,8 +162,8 @@ sharp square block and that the black bars are clean.
 |---|---|---|
 | 1 | Foundation: renderer, 640×360 canvas, integer scaling, states, input, assets, config, logging | ✅ Done |
 | 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ✅ Done |
-| 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ⏳ Next |
-| 4 | Main UI: menus, gameplay screen, pause, results, settings | |
+| 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ✅ Done |
+| 4 | Main UI: menus, gameplay screen, pause, results, settings | ⏳ Next |
 | 5 | Persistence: saves, profile, statistics, scores, continue | |
 | 6 | Progression: XP, levels, streaks, achievements | |
 | 7 | Polish: animations, transitions, particles, audio | |
@@ -140,4 +175,5 @@ sharp square block and that the black bars are clean.
 
 - `ASSETS.md`: every art and audio file the game expects
 - `LOCALIZATION.md`: Arabic shaping, RTL/bidi, adding translations and languages
-- `PUZZLES.md`, `SAVE_FORMAT.md`: added in later phases
+- `PUZZLES.md`: puzzle file format, categories, hints, difficulty, validation
+- `SAVE_FORMAT.md`: added in Phase 5
