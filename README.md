@@ -19,6 +19,23 @@ love .
 
 Run it from the project folder, or drag the folder onto `love.exe` on Windows.
 
+## How to build / release
+
+```sh
+tools/build.sh
+```
+
+This produces:
+
+- `build/PixelHangman.love`: runs on any system with LÖVE 11.5
+  (`love PixelHangman.love`, or double-click it if LÖVE is installed)
+- `build/PixelHangman-win64.zip`: a standalone Windows build. Unzip it and run
+  `PixelHangman.exe`; nothing needs installing. The script downloads the
+  official LÖVE 11.5 Windows files once and fuses the game into `love.exe`.
+
+Before a public release, set `Config.debug = false` in `src/core/config.lua`
+(this hides F2/F3 and the developer options).
+
 ## Controls (so far)
 
 | Key | Action |
