@@ -1,8 +1,9 @@
--- Renderer: owns the 320x180 virtual canvas and everything about putting it
--- on the physical window (scaling, letterboxing, fullscreen, screen shake and
--- the optional post-processing step used by the ShaderManager).
+-- Renderer: owns the virtual canvas (Config.virtualWidth x virtualHeight)
+-- and everything about putting it on the physical window (scaling,
+-- letterboxing, fullscreen, screen shake and the optional post-processing
+-- step used by the ShaderManager).
 --
---   Game world / UI  ->  320x180 canvas  ->  post-process  ->  scaled window
+--   Game world / UI  ->  640x360 canvas  ->  post-process  ->  scaled window
 --
 -- No other system should ever deal with window pixels directly.
 
@@ -31,7 +32,7 @@ local function computeScale(w, h)
     if Config.graphics.integerScaling and fit >= 1 then
         return math.floor(fit)
     end
-    -- Window smaller than 320x180, or integer scaling disabled:
+    -- Window smaller than the virtual size, or integer scaling disabled:
     -- keep the aspect ratio and use the largest size that fits.
     return fit
 end
@@ -116,7 +117,7 @@ end
 
 -- Coordinates -------------------------------------------------------------------
 
--- Converts window coordinates to virtual 320x180 coordinates.
+-- Converts window coordinates to virtual (canvas) coordinates.
 -- Returns virtualX, virtualY (whole pixels) and whether the point is inside
 -- the game area (false when it is on the letterbox bars).
 function Renderer.screenToVirtual(x, y)

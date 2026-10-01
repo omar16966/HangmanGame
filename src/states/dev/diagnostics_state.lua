@@ -143,33 +143,35 @@ function DiagnosticsState:drawDisplayPage(vw, vh)
     love.graphics.rectangle("fill", 0, vh - 3, 3, 3)
     love.graphics.rectangle("fill", vw - 3, vh - 3, 3, 3)
 
-    drawChecker(vw - 22, 6, 16)
+    drawChecker(vw - 38, 6, 32)
 
-    Text.draw("DIAGNOSTICS", 8, 2, { font = Assets.fonts.title, color = Palette.primary, align = "left" })
+    Text.draw("DIAGNOSTICS", 10, 4, { font = Assets.fonts.title, color = Palette.primary, align = "left" })
 
     local mx, my, inside = Input.getMousePosition()
     local ww, wh = Renderer.getWindowSize()
     local lines = {
         string.format("Window %dx%d  Scale %s", ww, wh, tostring(Renderer.getScale())),
         string.format("Mouse %d,%d %s", mx, my, inside and "inside" or "outside"),
-        "Keys 1-6 window size  S shake  Tab page",
-        "F11 fullscreen  F3 overlay  L language",
+        string.format("Keys 1-%d window size   S shake   Tab page", #Config.window.presets),
+        "F11 fullscreen   F3 overlay   L language",
     }
     for i, line in ipairs(lines) do
-        Text.draw(line, 8, 26 + (i - 1) * 11, { align = "left", color = Palette.text })
+        Text.draw(line, 10, 40 + (i - 1) * 13, { align = "left", color = Palette.text })
     end
-    Text.draw("Bold: The quick brown fox 0123456789", 8, 74,
+    Text.draw("Bold: The quick brown fox jumps over the lazy dog 0123456789", 10, 98,
         { font = Assets.fonts.bold, align = "left", color = Palette.secondary })
+    Text.draw("2x: Pixel Hangman", 10, 116, { font = Assets.fonts.title, align = "left", color = Palette.text })
 
     for i, text in ipairs(self.events) do
-        Text.draw(text, 8, 92 + (i - 1) * 11,
+        Text.draw(text, 10, 160 + (i - 1) * 13,
             { align = "left", color = i == 1 and Palette.highlight or Palette.textDim })
     end
 
+    local runnerX, runnerY = vw - 130, vh - 40
     love.graphics.setColor(Palette.correct)
-    love.graphics.rectangle("fill", 200 + Renderer.snap(self.runnerX), 150, 8, 8)
+    love.graphics.rectangle("fill", runnerX + Renderer.snap(self.runnerX), runnerY, 8, 8)
     love.graphics.setColor(Palette.text)
-    love.graphics.rectangle("fill", 200, 160, 104, 1)
+    love.graphics.rectangle("fill", runnerX, runnerY + 10, 104, 1)
 
     love.graphics.setColor(Palette.incorrect)
     for _, click in ipairs(self.clicks) do
@@ -193,25 +195,25 @@ function DiagnosticsState:drawTextPage(vw, vh)
     local rtl = Localization.isRTL()
 
     -- Title (localized, 2x font, outlined).
-    Localization.draw("GAME_TITLE", 0, 1, {
+    Localization.draw("GAME_TITLE", 0, 6, {
         font = Assets.fonts.title, width = vw, align = "center",
         color = Palette.primary, outlineColor = Palette.black,
     })
 
     -- Menu column: on the interface's start side.
-    local menuW = 84
-    local menuX = rtl and (vw - menuW - 6) or 6
-    drawBox(menuX - 2, 26, menuW + 4, #MENU_KEYS * 13 + 4)
+    local menuW, menuY, step = 130, 46, 16
+    local menuX = rtl and (vw - menuW - 12) or 12
+    drawBox(menuX - 4, menuY - 4, menuW + 8, #MENU_KEYS * step + 6)
     for i, key in ipairs(MENU_KEYS) do
-        Localization.draw(key, menuX, 27 + (i - 1) * 13, {
+        Localization.draw(key, menuX, menuY + (i - 1) * step, {
             width = menuW, align = "start",
             color = i == 1 and Palette.highlight or Palette.text,
         })
     end
 
     -- Mixed direction, numbers, punctuation.
-    local samplesX = rtl and 6 or (menuW + 14)
-    local samplesW = vw - menuW - 20
+    local samplesX = rtl and 12 or (menuW + 32)
+    local samplesW = vw - menuW - 44
     local samples = {
         L("PUZZLE_LANGUAGE") .. ": English",
         L("POINTS", { value = 1250 }) .. "  /  " .. L("PERCENT", { value = 85 }),
@@ -221,22 +223,27 @@ function DiagnosticsState:drawTextPage(vw, vh)
         "الذكاء الاصطناعي - مُبَرْمِج",
     }
     for i, sample in ipairs(samples) do
-        Localization.drawText(sample, samplesX, 27 + (i - 1) * 13, {
+        Localization.drawText(sample, samplesX, menuY + (i - 1) * step, {
             width = samplesW, align = "start", color = i % 2 == 1 and Palette.text or Palette.secondary,
         })
     end
 
     -- Wrapped paragraphs with boxes, both directions.
-    local boxY, boxH = 124, 44
-    local paraW = 148
-    drawBox(6, boxY, paraW, boxH)
-    Text.draw("اكتشف الكلمة المخفية حرفا بعد حرف قبل أن تنفد محاولاتك، وكل خطأ يقربك من النهاية.",
-        8, boxY + 2, { width = paraW - 4, align = "start", color = Palette.text })
-    drawBox(vw - paraW - 6, boxY, paraW, boxH)
-    Text.draw("Guess the hidden word letter by letter before you run out of attempts.",
-        vw - paraW - 4, boxY + 2, { width = paraW - 4, align = "start", color = Palette.text })
+    local boxY, boxH = 180, 150
+    local paraW = 300
+    local paraOpts = { width = paraW - 8, align = "start", color = Palette.text }
+    drawBox(12, boxY, paraW, boxH)
+    Text.draw("اكتشف الكلمة المخفية حرفا بعد حرف قبل أن تنفد محاولاتك، وكل خطأ يقربك من النهاية. "
+        .. "يمكنك استخدام التلميحات مقابل بعض النقاط.", 16, boxY + 4, paraOpts)
+    Text.draw("الذكاء الاصطناعي", 16, boxY + 90, { font = Assets.fonts.title, width = paraW - 8,
+        align = "start", color = Palette.secondary })
+    drawBox(vw - paraW - 12, boxY, paraW, boxH)
+    Text.draw("Guess the hidden word letter by letter before you run out of attempts. "
+        .. "Hints cost a few points.", vw - paraW - 8, boxY + 4, paraOpts)
+    Text.draw("Artificial Intelligence", vw - paraW - 8, boxY + 90, { font = Assets.fonts.title,
+        width = paraW - 8, align = "start", color = Palette.secondary })
 
-    Text.draw("Tab: page   L: " .. Localization.getNativeName(rtl and "en" or "ar"), vw / 2, vh - 12,
+    Text.draw("Tab: page   L: " .. Localization.getNativeName(rtl and "en" or "ar"), vw / 2, vh - 16,
         { align = "center", color = Palette.textDim })
 end
 

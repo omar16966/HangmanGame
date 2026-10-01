@@ -17,26 +17,26 @@ Config.app = {
 -- Must be false for release builds.
 Config.debug = true
 
-Config.virtualWidth = 320
-Config.virtualHeight = 180
+-- Internal (virtual) resolution. Everything is drawn at this size and then
+-- scaled by a whole number: 2x = 1280x720, 3x = 1920x1080, 4x = 2560x1440.
+Config.virtualWidth = 640
+Config.virtualHeight = 360
 
 Config.window = {
-    width = 960,
-    height = 540,
-    minWidth = 320,
-    minHeight = 180,
+    width = 1280,
+    height = 720,
+    minWidth = 640,
+    minHeight = 360,
     resizable = true,
     fullscreen = false,
     fullscreenType = "desktop",
     vsync = 1,
-    -- Window sizes offered in the settings menu (all exact multiples of 320x180).
+    -- Window sizes offered in the settings menu (exact multiples of 640x360).
     presets = {
-        { 320, 180 },
         { 640, 360 },
-        { 960, 540 },
         { 1280, 720 },
-        { 1600, 900 },
         { 1920, 1080 },
+        { 2560, 1440 },
     },
 }
 

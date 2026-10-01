@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Checks that a screenshot of the game is pixel-perfect.
 
-Usage: verify_pixels.py screenshot.png [--integer]
+Usage: verify_pixels.py screenshot.png [virtual_width virtual_height]
 
 Computes the same scale/offset as src/graphics/renderer.lua and verifies that
-every virtual 320x180 pixel became a uniform block of scale x scale window
+every virtual pixel became a uniform block of scale x scale window
 pixels, and that the letterbox bars are plain black.
 """
 import math
@@ -12,11 +12,14 @@ import sys
 
 from PIL import Image
 
-VW, VH = 320, 180
+VW, VH = 640, 360  # must match Config.virtualWidth / virtualHeight
 
 
 def main():
+    global VW, VH
     path = sys.argv[1]
+    if len(sys.argv) >= 4:
+        VW, VH = int(sys.argv[2]), int(sys.argv[3])
     img = Image.open(path).convert("RGB")
     w, h = img.size
     fit = min(w / VW, h / VH)

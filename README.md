@@ -56,10 +56,12 @@ tools/                   development scripts (headless display checks)
 ### Architecture in short
 
 - **Renderer** (`src/graphics/renderer.lua`): the whole game is drawn on a
-  **320×180** canvas, which is then scaled up by a whole number (3× at
-  960×540, 6× at 1920×1080) and centered. Black bars fill any space left
-  over. `Renderer.screenToVirtual(x, y)` converts mouse positions. Screen shake
-  moves the image in whole virtual pixels only.
+  **640×360** canvas, which is then scaled up by a whole number (2× at
+  1280×720, 3× at 1920×1080, 4× at 2560×1440) and centered. Black bars fill
+  any space left over. `Renderer.screenToVirtual(x, y)` converts mouse
+  positions. Screen shake moves the image in whole virtual pixels only.
+  The resolution is set in `Config.virtualWidth/virtualHeight`. (`plan.md`
+  says 320×180; it was changed to 640×360 to give text and art more room.)
 - **StateManager** (`src/core/state_manager.lua`): a stack of states.
   `switch` replaces the whole stack and `push`/`pop` add or remove overlays
   such as the pause menu. Each state implements only the callbacks it needs
@@ -115,7 +117,7 @@ tools/run_checks.sh       # pixel-perfect screenshots at 7 window sizes
 Requirements: `luajit`, `xvfb-run`, Python 3 with `pillow uharfbuzz python-bidi fonttools`.
 
 `tools/run_checks.sh [state]` starts the game headless (using xvfb) at
-320×180, 640×360, 960×540, 1280×720, 1920×1080, 1366×768 and 1000×700. It
+640×360, 1280×720, 1920×1080, 2560×1440, 1366×768, 1000×700 and 800×450. It
 then uses `tools/verify_pixels.py` to check that every virtual pixel is a
 sharp square block and that the black bars are clean.
 
@@ -123,7 +125,7 @@ sharp square block and that the black bars are clean.
 
 | # | Phase | Status |
 |---|---|---|
-| 1 | Foundation: renderer, 320×180 canvas, integer scaling, states, input, assets, config, logging | ✅ Done |
+| 1 | Foundation: renderer, 640×360 canvas, integer scaling, states, input, assets, config, logging | ✅ Done |
 | 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ✅ Done |
 | 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ⏳ Next |
 | 4 | Main UI: menus, gameplay screen, pause, results, settings | |

@@ -4,7 +4,7 @@
 -- actions (CONFIRM, BACK, LEFT, ...) defined in Config.input.bindings, so
 -- adding a gamepad later only means adding new bindings here.
 --
--- Mouse positions are always reported in virtual 320x180 coordinates.
+-- Mouse positions are always reported in virtual (canvas) coordinates.
 
 local Config = require("src.core.config")
 local Renderer = require("src.graphics.renderer")

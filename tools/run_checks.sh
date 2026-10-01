@@ -10,10 +10,10 @@ OUT="${2:-/tmp/hangman_checks}"
 SAVE_DIR="$HOME/.local/share/love/pixel_hangman"
 mkdir -p "$OUT"
 status=0
-for size in 320x180 640x360 960x540 1280x720 1920x1080 1366x768 1000x700; do
+for size in 640x360 1280x720 1920x1080 2560x1440 1366x768 1000x700 800x450; do
     name="check_${STATE}_${size}.png"
     log="$OUT/${STATE}_${size}.log"
-    timeout 30 xvfb-run -a -s "-screen 0 2560x1440x24" \
+    timeout 30 xvfb-run -a -s "-screen 0 2600x1500x24" \
         love . --size "$size" --state "$STATE" --screenshot "$name" \
         --screenshot-after 1 --quit-after 1.5 >"$log" 2>&1
     if grep -E "ERROR|Error:|stack traceback" "$log" >/dev/null; then

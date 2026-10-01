@@ -1,6 +1,6 @@
 -- Development overlay (F3). Only available when Config.debug is true.
 -- Drawn at window resolution on top of the scaled game, so it never
--- disturbs the 320x180 pixel art.
+-- disturbs the pixel art.
 
 local Config = require("src.core.config")
 local Renderer = require("src.graphics.renderer")
