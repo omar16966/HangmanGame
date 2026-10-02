@@ -10,6 +10,7 @@ local Settings = require("src.core.settings")
 local StateManager = require("src.core.state_manager")
 local DebugOverlay = require("src.core.debug_overlay")
 local Renderer = require("src.graphics.renderer")
+local Cursor = require("src.ui.cursor")
 
 local Game = {}
 
@@ -22,6 +23,15 @@ local function registerStates()
     StateManager.register(S.BOOT, require("src.states.boot_state"))
     StateManager.register(S.DIAGNOSTICS, require("src.states.dev.diagnostics_state"))
     StateManager.register(S.GAMEPLAY, require("src.states.gameplay_state"))
+    StateManager.register(S.MAIN_MENU, require("src.states.main_menu_state"))
+    StateManager.register(S.LANGUAGE, require("src.states.language_state"))
+    StateManager.register(S.CATEGORY, require("src.states.category_state"))
+    StateManager.register(S.PAUSE, require("src.states.pause_state"))
+    StateManager.register(S.RESULT, require("src.states.result_state"))
+    StateManager.register(S.SETTINGS, require("src.states.settings_state"))
+    StateManager.register(S.HELP, require("src.states.help_state"))
+    StateManager.register(S.CREDITS, require("src.states.credits_state"))
+    StateManager.register(S.MODAL, require("src.states.modal_state"))
 end
 
 function Game.load(args)
@@ -96,13 +106,14 @@ function Game.update(dt)
     dt = math.min(dt, 1 / 15)
     Renderer.update(dt)
     StateManager.update(dt)
+    Cursor.update()
     updateAutomation(dt)
 end
 
 function Game.draw()
     Renderer.beginFrame()
     StateManager.draw()
-    Renderer.endFrame()
+    Renderer.endFrame(Cursor.draw)
     Renderer.present()
     DebugOverlay.draw()
 end
@@ -140,13 +151,14 @@ function Game.keypressed(key, scancode, isRepeat)
     if StateManager.dispatch("keypressed", key, scancode, isRepeat) then
         return
     end
+    -- The first action that is used stops the others (see Input ACTION_ORDER).
     for _, action in ipairs(Input.actionsForKey(key)) do
-        local handled = false
-        if not isRepeat then
-            handled = handleGlobalAction(action)
-        end
+        local handled = (not isRepeat) and handleGlobalAction(action)
         if not handled then
-            StateManager.dispatch("action", action, isRepeat)
+            handled = StateManager.dispatch("action", action, isRepeat)
+        end
+        if handled then
+            break
         end
     end
 end

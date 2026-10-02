@@ -7,7 +7,8 @@ local Config = {}
 Config.app = {
     name = "Hangman",            -- fallback title; the localized title comes from the GAME_TITLE key
     version = "0.1.0",
-    developer = "",
+    developer = "",              -- shown on the Credits screen ("A game by ...")
+    -- copyright and website are optional; copyright is shown in the Credits too
     copyright = "",
     website = "",
     identity = "pixel_hangman",  -- save folder name inside the LÖVE save directory
@@ -51,6 +52,8 @@ Config.graphics = {
     scanlines = true,
     screenShake = true,
     particles = true,
+    -- Draw assets/ui/cursor.png instead of the system cursor (when the file exists).
+    customCursor = true,
 }
 
 Config.input = {
@@ -132,7 +135,6 @@ Config.puzzles = {
 }
 
 -- First state entered after the boot state finishes loading.
--- (The main menu replaces this in Phase 4.)
-Config.startState = "gameplay"
+Config.startState = "main_menu"
 
 return Config

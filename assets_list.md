@@ -132,11 +132,11 @@ buttons.
 
 ---
 
-## B. Used by the menus (Phase 4)
+## B. Used by the menus (now)
 
 | # | File | Size | Content |
 |---|---|---|---|
-| 8 | `assets/backgrounds/menu.png` | 640×360 | Main menu background |
+| 8 | `assets/backgrounds/menu.png` | 640×360 | Background of the main menu, category, settings, help and credits screens. The menu character stands on the floor at **y = 300**. |
 | 9 | `assets/backgrounds/results.png` | 640×360 | Results screen background |
 | 10 | `assets/ui/logo_ar.png` | up to 400×80 | Arabic title logo "الرجل المشنوق" |
 | 11 | `assets/ui/logo_en.png` | up to 400×80 | English title logo "Hangman" |

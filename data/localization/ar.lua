@@ -66,7 +66,6 @@ return {
     TYPE_ENGLISH = "استخدم الحروف الإنجليزية لهذا اللغز.",
     NOTHING_TO_REVEAL = "لا يمكن كشف حرف الآن.",
     NO_PUZZLES = "لا توجد ألغاز متاحة لهذا الاختيار.",
-    NEXT_ROUND_PROMPT = "اضغط Enter أو انقر للغز التالي",
     ROUND_POINTS = "+{points}",
 
     -- Results
@@ -119,4 +118,43 @@ return {
     -- Formats
     POINTS = "{value} نقطة",
     PERCENT = "{value}٪",
+
+    -- Menus (Phase 4)
+    COMING_SOON = "متاح في تحديث قادم.",
+    CONFIRM_EXIT = "هل تريد الخروج من اللعبة؟",
+    CONFIRM_RESTART = "إعادة هذه الجولة؟ سيضيع تقدمك فيها.",
+    CHOOSE_CATEGORY = "اختر الفئة",
+    ALL_CATEGORIES = "كل الفئات",
+    PUZZLE_COUNT = "{count} لغز",
+    LOCKED_LEVEL = "تفتح في المستوى {level}.",
+    VERSION = "الإصدار {version}",
+
+    -- Results breakdown
+    SCORE_BASE = "حل اللغز",
+    SCORE_LETTERS = "الحروف المكتشفة",
+    SCORE_ATTEMPTS = "المحاولات المتبقية",
+    SCORE_SPEED = "مكافأة السرعة",
+    SCORE_PENALTY = "الخصومات",
+    SCORE_MULTIPLIER = "مضاعف الصعوبة",
+    SESSION_SCORE = "نقاط الجلسة",
+    TIME_VALUE = "{minutes}:{seconds}",
+    MULTIPLIER_VALUE = "×{value}",
+
+    -- Help
+    HELP_GOAL_TITLE = "الهدف",
+    HELP_GOAL = "اكتشف الكلمة أو العبارة المخفية قبل أن يكتمل الإطار الخشبي. كل حرف خاطئ يضيف قطعة جديدة.",
+    HELP_GUESS_TITLE = "التخمين",
+    HELP_GUESS = "اكتب حرفا أو انقر عليه في لوحة المفاتيح على الشاشة. تكرار الحرف لا يكلفك شيئا. في الألغاز العربية تعد أ إ آ مثل ا وتُهمل الحركات.",
+    HELP_HINTS_TITLE = "التلميحات",
+    HELP_HINTS = "زر التلميح يعرض دليلا، وزر كشف حرف يظهر حرفا واحدا. كلاهما يخصم من النقاط.",
+    HELP_SCORE_TITLE = "النقاط",
+    HELP_SCORE = "احصل على نقاط أكثر بالحل السريع مع أخطاء قليلة ودون تلميحات. الصعوبة الأعلى تضاعف النقاط.",
+    HELP_KEYS_TITLE = "التحكم",
+    HELP_KEYS = "الأسهم و Enter: التنقل والاختيار. Esc: رجوع أو إيقاف مؤقت. F11: ملء الشاشة.",
+
+    -- Credits
+    CREDITS_DEVELOPER = "لعبة من تطوير {name}",
+    CREDITS_ENGINE = "صنعت باستخدام LÖVE",
+    CREDITS_FONT = "الخط: Pixel AE",
+    CREDITS_THANKS = "شكرا للعب!",
 }

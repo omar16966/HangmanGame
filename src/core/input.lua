@@ -31,9 +31,27 @@ local mouseX, mouseY, mouseInside = 0, 0, false
 -- "keyboard" or "mouse": lets the UI decide whether to show a focus cursor.
 Input.lastDevice = "keyboard"
 
+-- When one key has several actions (Esc = BACK and PAUSE), they are sent in
+-- this order and the first action a state uses wins.
+local ACTION_ORDER = {
+    "CONFIRM", "BACK", "PAUSE", "LEFT", "RIGHT", "UP", "DOWN",
+    "TOGGLE_FULLSCREEN", "TOGGLE_DEBUG_OVERLAY", "OPEN_DIAGNOSTICS",
+}
+
 local function addBindings(bindings)
-    for action, keys in pairs(bindings) do
-        for _, key in ipairs(keys) do
+    local ordered = {}
+    for _, action in ipairs(ACTION_ORDER) do
+        if bindings[action] then ordered[#ordered + 1] = action end
+    end
+    for action in pairs(bindings) do
+        local known = false
+        for _, a in ipairs(ACTION_ORDER) do
+            if a == action then known = true end
+        end
+        if not known then ordered[#ordered + 1] = action end
+    end
+    for _, action in ipairs(ordered) do
+        for _, key in ipairs(bindings[action]) do
             keyToActions[key] = keyToActions[key] or {}
             table.insert(keyToActions[key], action)
         end

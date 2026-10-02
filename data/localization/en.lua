@@ -64,7 +64,6 @@ return {
     TYPE_ENGLISH = "Use English letters for this puzzle.",
     NOTHING_TO_REVEAL = "No letter can be revealed now.",
     NO_PUZZLES = "No puzzles available for this choice.",
-    NEXT_ROUND_PROMPT = "Press Enter or click for the next puzzle",
     ROUND_POINTS = "+{points}",
 
     -- Results
@@ -117,4 +116,43 @@ return {
     -- Formats
     POINTS = "{value} points",
     PERCENT = "{value}%",
+
+    -- Menus (Phase 4)
+    COMING_SOON = "Available in a later update.",
+    CONFIRM_EXIT = "Quit the game?",
+    CONFIRM_RESTART = "Restart this round? Its progress will be lost.",
+    CHOOSE_CATEGORY = "Choose a Category",
+    ALL_CATEGORIES = "All Categories",
+    PUZZLE_COUNT = "{count} puzzles",
+    LOCKED_LEVEL = "Unlocks at level {level}.",
+    VERSION = "Version {version}",
+
+    -- Results breakdown
+    SCORE_BASE = "Puzzle solved",
+    SCORE_LETTERS = "Letters found",
+    SCORE_ATTEMPTS = "Unused attempts",
+    SCORE_SPEED = "Speed bonus",
+    SCORE_PENALTY = "Penalties",
+    SCORE_MULTIPLIER = "Difficulty multiplier",
+    SESSION_SCORE = "Session score",
+    TIME_VALUE = "{minutes}:{seconds}",
+    MULTIPLIER_VALUE = "x{value}",
+
+    -- Help
+    HELP_GOAL_TITLE = "Goal",
+    HELP_GOAL = "Find the hidden word or phrase before the wooden frame is finished. Each wrong letter adds a piece.",
+    HELP_GUESS_TITLE = "Guessing",
+    HELP_GUESS = "Type a letter or click it on the on-screen keyboard. Repeating a letter costs nothing. In Arabic puzzles, أ إ آ count as ا and diacritics are ignored.",
+    HELP_HINTS_TITLE = "Hints",
+    HELP_HINTS = "Show Hint displays a clue. Reveal a Letter uncovers one letter. Both cost points.",
+    HELP_SCORE_TITLE = "Score",
+    HELP_SCORE = "Solve quickly, with few mistakes and no hints, for more points. Harder difficulties multiply the score.",
+    HELP_KEYS_TITLE = "Controls",
+    HELP_KEYS = "Arrows + Enter: move and select. Esc: back / pause. F11: fullscreen.",
+
+    -- Credits
+    CREDITS_DEVELOPER = "A game by {name}",
+    CREDITS_ENGINE = "Made with LÖVE",
+    CREDITS_FONT = "Font: Pixel AE",
+    CREDITS_THANKS = "Thank you for playing!",
 }

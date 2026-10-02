@@ -129,6 +129,14 @@ function Localization.formatNumber(value, decimals)
     return text
 end
 
+-- Converts the digits inside a string (e.g. "05") to the interface digits.
+function Localization.formatDigits(text)
+    if current.digits == "arabic" then
+        return (text:gsub("%d", function(d) return ARABIC_DIGITS[tonumber(d) + 1] end))
+    end
+    return text
+end
+
 -- Strings -----------------------------------------------------------------------------------
 
 local function substitute(text, params)
@@ -164,6 +172,19 @@ function Localization.get(key, params)
 end
 
 Localization.L = Localization.get
+
+-- A string in a specific language, whatever the interface language is
+-- (used by the first-launch language screen, which shows both).
+function Localization.getIn(code, key, params)
+    local dict = dictionaries[code] or dictionaries[languages.fallback]
+    local text = dict[key] or dictionaries[languages.fallback][key] or tostring(key)
+    return substitute(text, params)
+end
+
+function Localization.getDirectionOf(code)
+    local meta = languages[code]
+    return meta and meta.direction or "ltr"
+end
 
 function Localization.has(key)
     return dictionaries[current.code][key] ~= nil

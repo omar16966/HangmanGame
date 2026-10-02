@@ -27,7 +27,8 @@ local Scene = require("src.gameplay.scene")
 local WordDisplay = require("src.gameplay.word_display")
 local VirtualKeyboard = require("src.ui.virtual_keyboard")
 local Button = require("src.ui.button")
-local Skin = require("src.ui.skin")
+local StateManager = require("src.core.state_manager")
+local Constants = require("src.core.constants")
 local Icons = require("src.ui.icons")
 local keyboards = require("data.keyboards")
 
@@ -48,6 +49,7 @@ local MESSAGE_TIME = 1.8
 -- Setup -------------------------------------------------------------------------------------------
 
 function GameplayState:enter(params)
+    self.replayPuzzleId = params.replayPuzzleId
     self.language = params.language or Settings.get("puzzleLanguage")
     self.category = params.category or "all"
     self.difficulty = params.difficulty or Settings.get("difficulty")
@@ -71,6 +73,24 @@ function GameplayState:createButtons()
         onClick = function() self:useRevealHint() end,
     })
     self.buttons = { self.hintButton, self.revealButton }
+    self.pauseButton = Button.new({
+        w = 22, h = 18, icon = "pause", tooltipKey = "PAUSED",
+        onClick = function() self:openPause() end,
+    })
+end
+
+-- Parameters to start another round with the same choices.
+function GameplayState:getParams()
+    return { language = self.language, category = self.category, difficulty = self.difficulty }
+end
+
+function GameplayState:openPause()
+    if self.round and not self.round:isFinished() then
+        StateManager.push(Constants.States.PAUSE, {
+            gameplayParams = self:getParams(),
+            puzzleId = self.round.puzzle.id,
+        })
+    end
 end
 
 -- Places the bottom buttons on the end side of the interface direction.
@@ -80,6 +100,7 @@ function GameplayState:layoutButtons()
     for _, b in ipairs(self.buttons) do
         b:fit()
     end
+    self.pauseButton:setPosition(rtl and MARGIN or (VW - MARGIN - self.pauseButton.w), 4)
     if rtl then
         local x = MARGIN
         for i = #self.buttons, 1, -1 do
@@ -99,13 +120,15 @@ function GameplayState:layoutButtons()
 end
 
 function GameplayState:startRound()
-    self.summary = nil
     self.finishTimer = nil
     self.message = nil
     self.hintText = nil
     self.scoreResult = nil
 
-    local puzzle = PuzzleManager.pick({
+    -- "Replay" / "Restart round" play the same puzzle again.
+    local puzzle = self.replayPuzzleId and PuzzleManager.get(self.replayPuzzleId)
+    self.replayPuzzleId = nil
+    puzzle = puzzle or PuzzleManager.pick({
         language = self.language,
         category = self.category,
         difficulty = self.difficulty,
@@ -223,6 +246,7 @@ function GameplayState:update(dt)
     for _, b in ipairs(self.buttons) do
         b:update(dt)
     end
+    self.pauseButton:update(dt)
     if not self.round then
         return
     end
@@ -255,7 +279,11 @@ function GameplayState:update(dt)
         self.finishTimer = self.finishTimer - dt
         if self.finishTimer <= 0 then
             self.finishTimer = nil
-            self.summary = true
+            StateManager.switch(Constants.States.RESULT, {
+                round = self.round,
+                scoreResult = self.scoreResult,
+                gameplayParams = self:getParams(),
+            })
         end
     end
 end
@@ -287,32 +315,36 @@ function GameplayState:keypressed(key)
 end
 
 function GameplayState:action(action)
-    if self.summary or self.noPuzzles then
-        if action == Input.Actions.CONFIRM then
-            self:startRound()
+    local A = Input.Actions
+    if self.noPuzzles then
+        if action == A.CONFIRM or action == A.BACK then
+            StateManager.switch(Constants.States.CATEGORY)
         end
+        return true
+    end
+    if action == A.BACK or action == A.PAUSE then
+        self:openPause()
         return true
     end
     if not self.round or self.round:isFinished() then
         return true
     end
-    if action == Input.Actions.LEFT then
+    if action == A.LEFT then
         self.keyboard:moveFocus(-1, 0)
-    elseif action == Input.Actions.RIGHT then
+    elseif action == A.RIGHT then
         self.keyboard:moveFocus(1, 0)
-    elseif action == Input.Actions.UP then
+    elseif action == A.UP then
         self.keyboard:moveFocus(0, -1)
-    elseif action == Input.Actions.DOWN then
+    elseif action == A.DOWN then
         self.keyboard:moveFocus(0, 1)
-    elseif action == Input.Actions.CONFIRM then
+    elseif action == A.CONFIRM then
         self.keyboard:pressFocused()
     end
-    -- PAUSE / BACK open the pause menu in Phase 4.
     return true
 end
 
 function GameplayState:mousepressed(x, y, button)
-    if self.summary then
+    if self.pauseButton:mousepressed(x, y, button) then
         return true
     end
     for _, b in ipairs(self.buttons) do
@@ -325,10 +357,7 @@ function GameplayState:mousepressed(x, y, button)
 end
 
 function GameplayState:mousereleased(x, y, button)
-    if self.summary then
-        if button == 1 then
-            self:startRound()
-        end
+    if self.pauseButton:mousereleased(x, y, button) then
         return true
     end
     for _, b in ipairs(self.buttons) do
@@ -374,12 +403,16 @@ function GameplayState:drawTopBar()
     Localization.draw("SCORE_VALUE", MARGIN, 5, opts, { value = session.score + running })
 
     if self.round then
+        -- Category and difficulty on the end side, next to the pause button.
+        local inset = self.pauseButton.w + 6
+        local x = Localization.isRTL() and (MARGIN + inset) or MARGIN
+        opts.width = VW - 2 * MARGIN - inset
         opts.align = "end"
         opts.color = Palette.primary
         Localization.drawText(PuzzleManager.getCategoryName(self.round.puzzle.category, Localization.getLanguage()),
-            MARGIN, 5, opts)
+            x, 5, opts)
         opts.color = Palette.textDim
-        Localization.draw("DIFFICULTY_" .. self.difficulty:upper(), MARGIN, 18, opts)
+        Localization.draw("DIFFICULTY_" .. self.difficulty:upper(), x, 18, opts)
     end
 end
 
@@ -415,31 +448,13 @@ function GameplayState:drawMessage()
     end
 end
 
--- Interim round summary (replaced by the Result screen in Phase 4).
--- Drawn over the keyboard so the scene's final animation stays visible.
-function GameplayState:drawSummary()
-    local w, h = 360, 106
-    local x, y = math.floor((VW - w) / 2), KEYBOARD_Y - 4
-    Skin.drawFrame("panel", "normal", x, y, w, h)
-    local won = self.round:isWon()
-    Localization.draw(won and "RESULT_WIN" or "RESULT_LOSS", x, y + 8, {
-        font = Assets.fonts.title, width = w, align = "center",
-        color = won and Palette.correct or Palette.incorrect, shadowColor = Palette.black,
-    })
-    Localization.drawText(L("ANSWER") .. ": " .. self.round.puzzle.answer, x + 10, y + 42, {
-        width = w - 20, align = "center", color = Palette.text,
-    })
-    Localization.draw("POINTS", x, y + 60, { width = w, align = "center", color = Palette.highlight },
-        { value = self.scoreResult.total })
-    Localization.draw("NEXT_ROUND_PROMPT", x, y + 86, { width = w, align = "center", color = Palette.textDim })
-end
-
 function GameplayState:draw()
     self:drawBackground()
     self:drawTopBar()
 
     if self.noPuzzles or not self.round then
         Localization.draw("NO_PUZZLES", 0, VH / 2 - 8, { width = VW, align = "center", color = Palette.text })
+        Localization.draw("BACK", 0, VH / 2 + 8, { width = VW, align = "center", color = Palette.textDim })
         return
     end
 
@@ -451,9 +466,7 @@ function GameplayState:draw()
     for _, b in ipairs(self.buttons) do
         b:draw()
     end
-    if self.summary then
-        self:drawSummary()
-    end
+    self.pauseButton:draw()
 end
 
 return GameplayState

@@ -3,7 +3,7 @@
 A pixel-art Hangman word puzzle game made with **LÖVE2D + Lua**, with an
 Arabic (right-to-left) and English interface and Arabic and English puzzles.
 
-> **Development status:** Phases 1 (Foundation), 2 (Localization) and 3 (Core gameplay) are complete. See
+> **Development status:** Phases 1–4 (Foundation, Localization, Core gameplay, Main UI) are complete. See
 > [Development phases](#development-phases). This README grows with each phase.
 
 ## Requirements
@@ -36,23 +36,37 @@ This produces:
 Before a public release, set `Config.debug = false` in `src/core/config.lua`
 (this hides F2/F3 and the developer options).
 
-## Controls (so far)
+## Controls
 
 | Key | Action |
 |---|---|
-| Letters (keyboard) | Guess a letter. In Arabic puzzles, an English keyboard layout is mapped to the Arabic letter in the same position. |
-| Mouse click | Press a key on the on-screen keyboard or a button |
-| Arrow keys + Enter / Space | Move over the on-screen keyboard and press the focused key |
-| Enter / click | Next puzzle (after a round) |
+| Mouse | Hover and click buttons, keys, pickers and tabs; drag sliders |
+| Arrow keys | Move between buttons / keys (pickers and sliders: change the value) |
+| Enter / Space | Press the focused button or key |
+| Esc / Backspace / right mouse button | Back. In gameplay: pause menu |
+| P | Pause / resume during a round |
+| Letters | Guess a letter. In Arabic puzzles, an English keyboard layout is mapped to the Arabic letter in the same position. |
 | F11 or Alt+Enter | Toggle fullscreen |
 | F3 | Debug overlay *(debug builds only)*: shows the current puzzle and its answer |
 | F2 | Diagnostics screen *(debug builds only)* |
 
-The game currently starts directly in gameplay (`Config.startState`). The
-main menu, pause menu (Esc), category selection and result screen come in
-Phase 4.
+All bindings are in `Config.input` (`src/core/config.lua`). In the Arabic
+interface, pickers, sliders and tabs are mirrored. For example, Left picks
+the *next* option, and sliders fill from the right.
 
-All bindings are in `Config.input` (`src/core/config.lua`).
+## Screens
+
+```text
+Boot -> Main menu -> Category (puzzle language, difficulty, category) -> Gameplay -> Results
+             |                                                            |
+             +-- Settings (Gameplay / Audio / Graphics)            Pause (Esc / P):
+             +-- How to play, Credits, Language                    Resume, Restart round,
+             +-- Exit (with confirmation)                          Settings, Main menu
+```
+
+Continue, Scores and Statistics are shown disabled until Phase 5 (saves).
+Settings take effect immediately and are saved from Phase 5. The audio
+settings take effect in Phase 7 and the shader settings in Phase 8.
 
 ## Project structure
 
@@ -68,9 +82,13 @@ src/localization/        text API, Arabic shaper, bidi, UTF-8 helpers
 src/managers/puzzle_manager.lua  puzzle loading, validation, selection
 src/gameplay/            round rules, normalizer, scoring, session, scene,
                          character physics, word display
-src/ui/                  button, virtual keyboard, skin (9-slice), icons
+src/ui/                  UI manager (focus/navigation), widgets: button, toggle,
+                         slider, selector, tabs, label, panel, progress bar,
+                         modal, tooltip; virtual keyboard, skin (9-slice), icons, cursor
 src/graphics/            + rope physics, placeholders (code-drawn art), 9-slice
-src/states/              game states (boot, gameplay, diagnostics, ...)
+src/states/              game states: boot, main menu, language, category, gameplay,
+                         pause, result, settings, help, credits, modal, diagnostics
+src/dev/                 developer tools (placeholder art exporter)
 data/localization/       interface languages and dictionaries (ar, en)
 data/puzzles/            puzzle packs (arabic/, english/), see PUZZLES.md
 data/categories.lua      categories, data/keyboards.lua keyboard layouts
@@ -105,6 +123,12 @@ tools/                   development scripts (headless display checks)
   `Scoring` computes points from `Config.score`. `Scene` and `Character`
   animate the wooden frame and the character with spring and rope physics.
   `WordDisplay` draws the answer cells.
+- **UI** (`src/ui/`): every menu holds its widgets in a `UIManager`. It
+  moves the focus with the arrow keys (to the nearest widget in that
+  direction, skipping disabled ones), follows mouse hover, and shows
+  tooltips. Widgets lay themselves out by the interface direction (label on
+  the start side, control on the end side). Overlays such as pause and
+  dialogs are pushed on the state stack and drawn over the screen below.
 - **Localization** (`src/managers/localization_manager.lua` +
   `src/localization/`): `L("KEY")` for strings and `Text.draw` /
   `Localization.draw` for drawing. Arabic is shaped and reordered correctly;
@@ -162,6 +186,7 @@ text page, and **L** toggles the interface language.
 tests/run_all.sh          # everything below
 luajit tests/unit_tests.lua
 luajit tests/gameplay_tests.lua      # rules, normalization, scoring, puzzles
+luajit tests/ui_tests.lua            # focus navigation, RTL widgets
 python3 tests/compare_reference.py   # Arabic shaping vs HarfBuzz, bidi vs python-bidi
 tools/run_checks.sh       # pixel-perfect screenshots at 7 window sizes
 ```
@@ -180,8 +205,8 @@ sharp square block and that the black bars are clean.
 | 1 | Foundation: renderer, 640×360 canvas, integer scaling, states, input, assets, config, logging | ✅ Done |
 | 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ✅ Done |
 | 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ✅ Done |
-| 4 | Main UI: menus, gameplay screen, pause, results, settings | ⏳ Next |
-| 5 | Persistence: saves, profile, statistics, scores, continue | |
+| 4 | Main UI: menus, gameplay screen, pause, results, settings | ✅ Done |
+| 5 | Persistence: saves, profile, statistics, scores, continue | ⏳ Next |
 | 6 | Progression: XP, levels, streaks, achievements | |
 | 7 | Polish: animations, transitions, particles, audio | |
 | 8 | Shaders: vignette, CRT, scanlines, noise | |
@@ -190,7 +215,8 @@ sharp square block and that the black bars are clean.
 
 ## Documentation
 
-- `ASSETS.md`: every art and audio file the game expects
+- `assets_list.md`: checklist of every art/audio file you can replace
+- `ASSETS.md`: every art and audio file the game expects (technical details)
 - `LOCALIZATION.md`: Arabic shaping, RTL/bidi, adding translations and languages
 - `PUZZLES.md`: puzzle file format, categories, hints, difficulty, validation
 - `SAVE_FORMAT.md`: added in Phase 5

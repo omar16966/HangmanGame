@@ -8,20 +8,20 @@
 -- icons (iconDirectional = true) are mirrored.
 
 local Input = require("src.core.input")
-local Utils = require("src.core.utils")
 local Assets = require("src.managers.asset_manager")
 local Localization = require("src.managers.localization_manager")
 local Text = require("src.localization.text")
 local Palette = require("src.graphics.palette")
 local Skin = require("src.ui.skin")
 local Icons = require("src.ui.icons")
+local Widget = require("src.ui.widget")
 
-local Button = {}
-Button.__index = Button
+local Button = Widget.extend()
 
 function Button.new(opts)
     local self = setmetatable({}, Button)
-    self.x, self.y, self.w, self.h = opts.x or 0, opts.y or 0, opts.w or 60, opts.h or 20
+    Widget.init(self, opts)
+    self.w, self.h = opts.w or 60, opts.h or 20
     -- autoWidth: the button grows to fit its (translated) label.
     self.autoWidth = opts.autoWidth
     self.minW = opts.w or 0
@@ -34,15 +34,8 @@ function Button.new(opts)
     self.iconDirectional = opts.iconDirectional
     self.font = opts.font
     self.onClick = opts.onClick
-    self.enabled = opts.enabled ~= false
-    self.focused = false
-    self.hovered = false
     self.pressed = false
     return self
-end
-
-function Button:setPosition(x, y)
-    self.x, self.y = x, y
 end
 
 function Button:setEnabled(enabled)
@@ -50,10 +43,6 @@ function Button:setEnabled(enabled)
     if not enabled then
         self.pressed = false
     end
-end
-
-function Button:contains(px, py)
-    return Utils.pointInRect(px, py, self.x, self.y, self.w, self.h)
 end
 
 function Button:getLabel()
@@ -99,6 +88,14 @@ function Button:activate()
     end
 end
 
+function Button:onAction(action)
+    if action == Input.Actions.CONFIRM and self.enabled then
+        self:activate()
+        return true
+    end
+    return false
+end
+
 function Button:mousepressed(x, y, button)
     if button == 1 and self.enabled and self:contains(x, y) then
         self.pressed = true
@@ -120,6 +117,9 @@ function Button:mousereleased(x, y, button)
 end
 
 function Button:draw()
+    if not self.visible then
+        return
+    end
     local state = self:getState()
     Skin.drawFrame("button", state, self.x, self.y, self.w, self.h)
     if self.focused and Input.lastDevice == "keyboard" then

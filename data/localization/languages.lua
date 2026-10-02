@@ -12,7 +12,9 @@ return {
         dictionary = "data.localization.ar",
         -- "arabic": ٠١٢٣٤٥٦٧٨٩   "western": 0123456789
         digits = "arabic",
-        decimalSeparator = "٫",
+        -- The Arabic decimal separator (U+066B) is missing from PixelAE,
+        -- so a dot is used: ١.٥
+        decimalSeparator = ".",
     },
 
     en = {

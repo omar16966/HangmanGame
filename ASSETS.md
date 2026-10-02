@@ -54,7 +54,7 @@ Font analysis (done with fontTools):
 
 | File | Size | Frames | Purpose | Status |
 |---|---|---|---|---|
-| `menu.png` | 640×360 | 1 | Main menu background | Final |
+| `menu.png` | 640×360 | 1 | Background of the main menu, category, settings, help, credits and language screens. The character stands on the floor at **y = 300**. | Final |
 | `gameplay.png` | 640×360 | 1 | Gameplay background. The floor line the character stands on is at **y = 160**. Keep the area below y ≈ 176 dark and calm: the word, keyboard and buttons are drawn there. | Final |
 | `results.png` | 640×360 | 1 | Results screen background | Final |
 | `gameplay_far.png` | 640×360, transparent | 1 | Optional far layer that moves slowly behind the scene | Draft (Phase 7) |

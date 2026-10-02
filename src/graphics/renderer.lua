@@ -78,8 +78,13 @@ function Renderer.beginFrame()
     love.graphics.translate(shake.x, shake.y)
 end
 
-function Renderer.endFrame()
+-- overlayFn (optional) draws on the canvas after the shake offset is removed
+-- (used for the mouse cursor, which must not shake).
+function Renderer.endFrame(overlayFn)
     love.graphics.pop()
+    if overlayFn then
+        overlayFn()
+    end
     love.graphics.setCanvas()
 end
 
