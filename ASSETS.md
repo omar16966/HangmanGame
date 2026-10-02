@@ -1,12 +1,17 @@
 # ASSETS
 
-Every art and audio file the game can use. **All files are optional except
-the font:** while a file is missing, the game draws placeholder art in code
-or skips the sound, and logs one warning at startup.
+Every art and audio file the game can use, with full technical details.
+For a short checklist, see **[assets_list.md](assets_list.md)**.
+
+**Every file listed here already exists as a dummy placeholder.** The images
+are exported from the art the game draws in code
+(`tools/export_placeholders.sh`), and the sounds are synthesized
+(`tools/generate_placeholder_audio.py`). Replace a file by overwriting it
+with the same name. If a file is ever missing, the game falls back to the
+code-drawn art (or silence) and logs one warning at startup.
 
 Asset keys are defined in `src/managers/asset_manifest.lua`. Code never uses
-file paths directly. To add a file, drop it into the right folder with the exact
-name below and restart the game. No code change is needed.
+file paths directly, so no code change is needed when art is replaced.
 
 > **Status.** Specs marked **Final** can be made now. Specs marked **Draft**
 > depend on a later phase and may still change.
@@ -121,8 +126,8 @@ The rope belt around the waist is drawn by code over the body.
 4. reveal (eye) · 5. star · 6. pause · 7. back arrow (pointing **left**; mirrored
 automatically for Arabic) · 8. sound · 9. check mark · 10. cross · 11. lock · 12. trophy
 
-Icons from the sheet are drawn in their own colors. The placeholder icons
-are white shapes tinted by the code.
+Icons from the sheet are drawn in their own colors and darkened on disabled
+buttons.
 
 ## Audio — `assets/audio/` (Phase 7)
 

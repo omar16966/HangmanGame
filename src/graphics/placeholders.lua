@@ -70,6 +70,15 @@ function Placeholders.getRoomBackground(w, h, floorY)
     return backgroundCache[key]
 end
 
+-- Gameplay background: the room down to the floor, then a dark band behind
+-- the word, keyboard and buttons.
+function Placeholders.drawGameplayBackground(w, h, floorY)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.draw(Placeholders.getRoomBackground(w, floorY + 14, floorY), 0, 0)
+    rect(Palette.backgroundDeep, 0, floorY + 14, w, h - floorY - 14)
+    rect(Palette.black, 0, floorY + 14, w, 1)
+end
+
 -- UI frames -----------------------------------------------------------------------------------
 
 -- style: "panel" | "button" | "key"
@@ -232,6 +241,28 @@ local function drawMouth(mood, mx, my)
     end
 end
 
+function Placeholders.drawFoot(fx, fy)
+    ellipse(Palette.black, floor(fx), floor(fy), 5, 3)
+    ellipse(BODY_DARK, floor(fx), floor(fy) - 1, 4, 2)
+end
+
+-- Leaf on the head: stem from (x1, y1) to the leaf at (x2, y2).
+function Placeholders.drawLeaf(x1, y1, x2, y2)
+    love.graphics.setColor(LEAF_DARK)
+    love.graphics.setLineWidth(1)
+    love.graphics.line(floor(x1) + 0.5, floor(y1) + 0.5, floor(x2) + 0.5, floor(y2) + 0.5)
+    ellipse(LEAF_DARK, floor(x2), floor(y2), 4, 3)
+    ellipse(LEAF, floor(x2), floor(y2) - 1, 3, 2)
+end
+
+-- A sweat drop (also drawn over sprite art).
+function Placeholders.drawSweat(sx, sy)
+    sx, sy = floor(sx), floor(sy)
+    rect(Palette.white, sx, sy, 1, 1)
+    rect(BODY_LIGHT, sx - 1, sy + 1, 3, 2)
+    rect(BODY_LIGHT, sx, sy + 3, 1, 1)
+end
+
 -- The rope tied around the character's waist (also used over sprite art).
 function Placeholders.drawBelt(p)
     local x, y, rx, ry = floor(p.x), floor(p.y), p.rx, p.ry
@@ -253,19 +284,13 @@ end
 function Placeholders.drawCharacter(p)
     local x, y, rx, ry = floor(p.x), floor(p.y), p.rx, p.ry
 
-    -- Feet behind the body.
-    for _, f in ipairs(p.feet) do
-        ellipse(Palette.black, floor(f[1]), floor(f[2]), 5, 3)
-        ellipse(BODY_DARK, floor(f[1]), floor(f[2]) - 1, 4, 2)
+    -- Feet behind the body (optional: sprite export draws parts separately).
+    for _, f in ipairs(p.feet or {}) do
+        Placeholders.drawFoot(f[1], f[2])
     end
-
-    -- Leaf on the head.
-    local leaf = p.leaf
-    love.graphics.setColor(LEAF_DARK)
-    love.graphics.setLineWidth(1)
-    love.graphics.line(floor(leaf[1]) + 0.5, floor(leaf[2]) + 0.5, floor(leaf[3]) + 0.5, floor(leaf[4]) + 0.5)
-    ellipse(LEAF_DARK, floor(leaf[3]), floor(leaf[4]), 4, 3)
-    ellipse(LEAF, floor(leaf[3]), floor(leaf[4]) - 1, 3, 2)
+    if p.leaf then
+        Placeholders.drawLeaf(p.leaf[1], p.leaf[2], p.leaf[3], p.leaf[4])
+    end
 
     -- Body: outline, shade, fill, highlight.
     ellipse(Palette.black, x, y, rx + 1, ry + 1)
@@ -302,10 +327,7 @@ function Placeholders.drawCharacter(p)
     end
 
     if p.sweat then
-        local sx, sy = floor(p.sweat[1]), floor(p.sweat[2])
-        rect(Palette.white, sx, sy, 1, 1)
-        rect(BODY_LIGHT, sx - 1, sy + 1, 3, 2)
-        rect(BODY_LIGHT, sx, sy + 3, 1, 1)
+        Placeholders.drawSweat(p.sweat[1], p.sweat[2])
     end
 end
 

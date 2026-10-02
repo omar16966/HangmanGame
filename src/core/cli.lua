@@ -13,6 +13,7 @@
 --   love . --page 2                    page passed to the first state (diagnostics)
 --   love . --set puzzleLanguage=en     change a setting (repeatable)
 --   love . --seed 42                   fixed random seed (repeatable tests)
+--   love . --export-placeholders       write the code-drawn art as PNG files and quit
 
 local Cli = {}
 
@@ -58,6 +59,8 @@ function Cli.parse(args)
                 table.insert(options.settings, { key, value })
             end
             i = i + 1
+        elseif a == "--export-placeholders" then
+            options.exportPlaceholders = true
         elseif a == "--seed" and args[i + 1] then
             options.seed = tonumber(args[i + 1])
             i = i + 1

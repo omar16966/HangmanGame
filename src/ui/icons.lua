@@ -32,8 +32,9 @@ local function getQuad(name)
 end
 
 -- mirror = true flips the icon horizontally (directional icons in RTL).
--- Sheet icons are drawn in their own colors; placeholder icons use `color`.
-function Icons.draw(name, x, y, color, mirror)
+-- Sheet icons are drawn in their own colors (darkened when `dimmed`);
+-- placeholder icons use `color`.
+function Icons.draw(name, x, y, color, mirror, dimmed)
     x, y = math.floor(x), math.floor(y)
     local sx, ox = 1, 0
     if mirror then
@@ -41,7 +42,8 @@ function Icons.draw(name, x, y, color, mirror)
     end
     local quad = getQuad(name)
     if quad then
-        love.graphics.setColor(1, 1, 1, color and color[4] or 1)
+        local v = dimmed and 0.45 or 1
+        love.graphics.setColor(v, v, v, color and color[4] or 1)
         love.graphics.draw(Assets.images.icons, quad, x + ox, y, 0, sx, 1)
     else
         local image = Placeholders.getIcon(name)

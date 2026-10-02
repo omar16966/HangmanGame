@@ -361,11 +361,7 @@ function GameplayState:drawBackground()
     if image then
         love.graphics.draw(image, 0, 0)
     else
-        love.graphics.draw(Placeholders.getRoomBackground(VW, FLOOR_Y + 14, FLOOR_Y), 0, 0)
-        love.graphics.setColor(Palette.backgroundDeep)
-        love.graphics.rectangle("fill", 0, FLOOR_Y + 14, VW, VH - FLOOR_Y - 14)
-        love.graphics.setColor(Palette.black)
-        love.graphics.rectangle("fill", 0, FLOOR_Y + 14, VW, 1)
+        Placeholders.drawGameplayBackground(VW, VH, FLOOR_Y)
     end
 end
 

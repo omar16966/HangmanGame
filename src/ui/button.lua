@@ -145,7 +145,7 @@ function Button:draw()
 
     if self.icon then
         Icons.draw(self.icon, iconX, midY - Icons.SIZE / 2 - 1,
-            self.iconColor or color, self.iconDirectional and rtl)
+            self.iconColor or color, self.iconDirectional and rtl, not self.enabled)
     end
     if label then
         Text.draw(label, textX, midY - Text.getCenterOffset(font, label),

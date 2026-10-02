@@ -310,6 +310,9 @@ function Character:drawSprite(pose)
     if pose.belt then
         Placeholders.drawBelt(pose)
     end
+    if pose.sweat then
+        Placeholders.drawSweat(pose.sweat[1], pose.sweat[2])
+    end
 end
 
 return Character

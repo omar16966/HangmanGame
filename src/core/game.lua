@@ -42,6 +42,12 @@ function Game.load(args)
     end
     Input.refreshMouse()
 
+    if options.exportPlaceholders then
+        require("src.dev.placeholder_exporter").run()
+        love.event.quit()
+        return
+    end
+
     DebugOverlay.init()
     DebugOverlay.setVisible(options.overlay == true)
 

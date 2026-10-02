@@ -37,6 +37,14 @@ local PIECES = {
     [4] = function() Placeholders.drawBrace(46, 46, 70, 20, 4) end,
 }
 
+-- Draws the placeholder wood for a stage (no animation). Also used by the
+-- placeholder exporter to create assets/sprites/hangman_stages.png.
+function Scene.drawPlaceholderStage(stage)
+    for s = 1, math.min(stage, 4) do
+        PIECES[s]()
+    end
+end
+
 -- Maps wrong guesses to a stage so every difficulty uses all stages:
 -- the last attempt always reaches stage 6 (lost) and stage 5 is the final warning.
 function Scene.stageFor(wrong, maxWrong)
