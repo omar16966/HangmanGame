@@ -153,6 +153,16 @@ function StateManager.draw()
     end
 end
 
+-- Tells every state on the stack (top first) that the application closes.
+function StateManager.notifyQuit()
+    for i = #stack, 1, -1 do
+        local ok, err = pcall(stack[i].onQuit, stack[i])
+        if not ok then
+            Logger.error("onQuit of state %s failed: %s", stack[i].name, tostring(err))
+        end
+    end
+end
+
 -- Sends an event to the top state. Returns true if it was consumed.
 function StateManager.dispatch(event, ...)
     local top = stack[#stack]

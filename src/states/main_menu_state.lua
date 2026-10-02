@@ -9,6 +9,8 @@ local Localization = require("src.managers.localization_manager")
 local Text = require("src.localization.text")
 local Palette = require("src.graphics.palette")
 local Input = require("src.core.input")
+local SaveManager = require("src.managers.save_manager")
+local GameFlow = require("src.managers.game_flow")
 local Button = require("src.ui.button")
 local Character = require("src.gameplay.character")
 local MenuBase = require("src.states.menu_base")
@@ -22,12 +24,17 @@ local MainMenuState = MenuBase.extend(S.MAIN_MENU)
 local BUTTON_W, BUTTON_H, BUTTON_GAP = 200, 20, 5
 local MENU_Y = 104
 
--- Menu entries. `soon` marks features of later phases (shown disabled).
+-- Menu entries. `needsSave` entries are only enabled when there is a saved game.
 local ITEMS = {
     { key = "PLAY", run = function() StateManager.switch(S.CATEGORY) end },
-    { key = "CONTINUE", soon = true },      -- Phase 5 (saves)
-    { key = "SCORES", soon = true },        -- Phase 5
-    { key = "STATISTICS", soon = true },    -- Phase 5
+    { key = "CONTINUE", needsSave = true, run = function()
+        local params = GameFlow.getResume()
+        if params then
+            StateManager.switch(S.GAMEPLAY, params)
+        end
+    end },
+    { key = "SCORES", run = function() StateManager.switch(S.SCORES) end },
+    { key = "STATISTICS", run = function() StateManager.switch(S.STATISTICS) end },
     { key = "SETTINGS", run = function() StateManager.push(S.SETTINGS) end },
     { key = "HOW_TO_PLAY", run = function() StateManager.push(S.HELP) end },
     { key = "CREDITS", run = function() StateManager.push(S.CREDITS) end },
@@ -43,14 +50,26 @@ local ITEMS = {
 
 function MainMenuState:build()
     local x = math.floor((VW - BUTTON_W) / 2)
+    self.itemButtons = {}
     for i, item in ipairs(ITEMS) do
         local button = Button.new({
             x = x, y = MENU_Y + (i - 1) * (BUTTON_H + BUTTON_GAP), w = BUTTON_W, h = BUTTON_H,
-            textKey = item.key, font = Assets.fonts.bold,
-            enabled = not item.soon, tooltipKey = item.soon and "COMING_SOON" or nil,
-            onClick = item.run,
+            textKey = item.key, font = Assets.fonts.bold, onClick = item.run,
         })
-        self.ui:add(button)
+        self.itemButtons[i] = self.ui:add(button)
+        item.button = button
+    end
+    self:refreshSaveState()
+
+    -- Something the player should know about the save file (restored from a
+    -- backup, could not be read, could not be written).
+    local notice = SaveManager.consumeNotice()
+    if notice then
+        StateManager.push(S.MODAL, {
+            messageKey = notice,
+            buttons = { { textKey = "OK", value = true } },
+            cancelValue = true,
+        })
     end
 
     self.languageButton = self.ui:add(Button.new({
@@ -63,8 +82,20 @@ function MainMenuState:build()
     self.hopTimer = 3
 end
 
+-- Continue is only available when a saved round exists.
+function MainMenuState:refreshSaveState()
+    local hasSave = GameFlow.hasResume()
+    for _, item in ipairs(ITEMS) do
+        if item.needsSave then
+            item.button:setEnabled(hasSave)
+            item.button.tooltipKey = (not hasSave) and "NO_SAVED_GAME" or nil
+        end
+    end
+end
+
 function MainMenuState:resume()
     -- Back from a side screen: keep the focus where it was.
+    self:refreshSaveState()
 end
 
 function MainMenuState:back()

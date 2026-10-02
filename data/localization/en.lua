@@ -47,7 +47,6 @@ return {
     RESUME = "Resume",
     RESTART_ROUND = "Restart Round",
     MAIN_MENU = "Main Menu",
-    CONFIRM_ABANDON = "Leave the current round? Its progress will be lost.",
 
     -- Gameplay
     SCORE = "Score",
@@ -118,7 +117,6 @@ return {
     PERCENT = "{value}%",
 
     -- Menus (Phase 4)
-    COMING_SOON = "Available in a later update.",
     CONFIRM_EXIT = "Quit the game?",
     CONFIRM_RESTART = "Restart this round? Its progress will be lost.",
     CHOOSE_CATEGORY = "Choose a Category",
@@ -155,4 +153,29 @@ return {
     CREDITS_ENGINE = "Made with LÖVE",
     CREDITS_FONT = "Font: Pixel AE",
     CREDITS_THANKS = "Thank you for playing!",
+
+    -- Saving, profile, scores (Phase 5)
+    DEFAULT_PLAYER_NAME = "Player",
+    PLAYER_NAME = "Player Name",
+    ENTER_NAME = "Enter Your Name",
+    CHANGE_NAME = "Change Name",
+    SKIP = "Skip",
+    NAME_HINT = "Up to {count} characters",
+    TOP_SCORES = "Top Scores",
+    NO_SCORES = "No scores yet. Finish a game to set one!",
+    FILTER_ALL = "All",
+    COL_RANK = "Rank",
+    COL_NAME = "Name",
+    COL_SCORE = "Score",
+    COL_LANGUAGE = "Language",
+    COL_DIFFICULTY = "Difficulty",
+    COL_ROUNDS = "Won",
+    COL_DATE = "Date",
+    TIME_HMS = "{hours}:{minutes}:{seconds}",
+    NO_SAVED_GAME = "No saved game to continue.",
+    CONFIRM_REPLACE_SAVE = "Starting a new game replaces your saved game. Continue?",
+    CONFIRM_LEAVE_SAVE = "Save the game and go to the main menu? You can continue this round later.",
+    SAVE_RECOVERED = "Your save file was damaged. Your progress was restored from a backup.",
+    SAVE_RESET = "Your save file could not be read, so a new one was started. The damaged file was kept.",
+    SAVE_FAILED = "Your progress could not be saved. Check the free disk space and folder permissions.",
 }

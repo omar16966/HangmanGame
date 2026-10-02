@@ -9,7 +9,8 @@ local Assets = require("src.managers.asset_manager")
 local Localization = require("src.managers.localization_manager")
 local PuzzleManager = require("src.managers.puzzle_manager")
 local Palette = require("src.graphics.palette")
-local Session = require("src.gameplay.session")
+local GameFlow = require("src.managers.game_flow")
+local SaveManager = require("src.managers.save_manager")
 local Button = require("src.ui.button")
 local Selector = require("src.ui.selector")
 local Panel = require("src.ui.panel")
@@ -70,12 +71,26 @@ function CategoryState:build()
 end
 
 function CategoryState:start(categoryId)
-    Session.start()
-    StateManager.switch(S.GAMEPLAY, {
+    local params = {
         language = Settings.get("puzzleLanguage"),
         category = categoryId,
         difficulty = Settings.get("difficulty"),
-    })
+    }
+    local function begin()
+        GameFlow.startNewGame(params)
+        StateManager.switch(S.GAMEPLAY, params)
+    end
+    -- A saved game would be replaced: ask first.
+    if SaveManager.getSuspended() then
+        StateManager.push(S.MODAL, {
+            messageKey = "CONFIRM_REPLACE_SAVE",
+            buttons = { { textKey = "YES", value = true }, { textKey = "NO", value = false } },
+            cancelValue = false,
+            onResult = function(yes) if yes then begin() end end,
+        })
+    else
+        begin()
+    end
 end
 
 function CategoryState:back()

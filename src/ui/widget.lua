@@ -67,7 +67,7 @@ end
 
 -- Highlight behind a focused row, plus the keyboard focus outline.
 function Widget:drawRowBackground()
-    if self.focused or self.hovered then
+    if (self.focused and Input.lastDevice == "keyboard") or self.hovered then
         love.graphics.setColor(Palette.withAlpha(Palette.panelHighlight, 0.35))
         love.graphics.rectangle("fill", self.x, self.y, self.w, self.h)
     end
@@ -92,6 +92,9 @@ end
 function Widget:update(dt) end
 function Widget:draw() end
 function Widget:onAction(action) return false end
+-- Typed text and special keys, for the focused widget (text fields).
+function Widget:onTextInput(text) return false end
+function Widget:onKey(key) return false end
 function Widget:mousepressed(x, y, button) return false end
 function Widget:mousereleased(x, y, button) return false end
 function Widget:mousemoved(x, y) end

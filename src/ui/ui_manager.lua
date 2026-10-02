@@ -156,6 +156,18 @@ function UIManager:action(action)
     return false
 end
 
+-- Typed text goes to the focused widget. Returns true if it was used.
+function UIManager:textinput(text)
+    validateFocus(self)
+    return self.focused ~= nil and self.focused:onTextInput(text) == true
+end
+
+-- Raw keys (backspace, ...) for the focused widget, before they become actions.
+function UIManager:keypressed(key)
+    validateFocus(self)
+    return self.focused ~= nil and self.focused:onKey(key) == true
+end
+
 function UIManager:update(dt)
     validateFocus(self)
     local mx, my, inside = Input.getMousePosition()
@@ -169,14 +181,17 @@ function UIManager:update(dt)
     if hover then
         hover.hovered = hover.enabled
     end
-    -- Mouse hover moves the keyboard focus too (only when the mouse is in use).
+    -- Mouse hover moves the keyboard focus too (only when the mouse is in
+    -- use). A pointer that merely rests over a widget when the screen opens
+    -- does not take the focus: it has to move.
     if hover ~= self.hoverWidget then
         self.hoverWidget = hover
         self.tooltipTimer = 0
-        if hover and Input.lastDevice == "mouse" and hover:canFocus() then
+        if self.pointerSeen and hover and Input.lastDevice == "mouse" and hover:canFocus() then
             self:setFocus(hover)
         end
     end
+    self.pointerSeen = true
     self.tooltipTimer = self.tooltipTimer + dt
     for _, w in ipairs(self.widgets) do
         w:update(dt)

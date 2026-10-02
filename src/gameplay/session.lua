@@ -1,5 +1,5 @@
--- Session: data for the current play session (since the game was started
--- or the player pressed Play), kept separate from lifetime statistics.
+-- Session: data for the current game (from the moment the player starts a
+-- game until it ends), kept separate from lifetime statistics.
 --
 -- Pure Lua (no LÖVE dependency) so it can be unit-tested.
 
@@ -7,20 +7,46 @@ local Session = {}
 
 local data
 
-function Session.start()
-    data = {
+local function blank()
+    return {
         score = 0,
         streak = 0,
         roundsPlayed = 0,
         roundsWon = 0,
         hintsUsed = 0,
         time = 0,
+        -- Choices made when the game started ("" = unknown).
+        language = "",
+        difficulty = "",
+        category = "",
+        submitted = false,   -- the score was already added to the high scores
     }
+end
+
+-- Starts a new game. meta: { language, difficulty, category } (optional).
+function Session.start(meta)
+    data = blank()
+    for _, key in ipairs({ "language", "difficulty", "category" }) do
+        if meta and type(meta[key]) == "string" then
+            data[key] = meta[key]
+        end
+    end
     return data
 end
 
+-- The current session; one is created if none exists.
 function Session.get()
     return data or Session.start()
+end
+
+-- The current session, or nil when none exists (does not create one).
+function Session.peek()
+    return data
+end
+
+-- Forgets the current session.
+function Session.clear()
+    data = nil
 end
 
 function Session.update(dt)
@@ -50,12 +76,16 @@ function Session.export()
     return copy
 end
 
+-- Restores a session from saved data; wrong or missing values stay at their defaults.
 function Session.load(saved)
     Session.start()
     if type(saved) == "table" then
-        for k in pairs(data) do
-            if type(saved[k]) == type(data[k]) then
-                data[k] = saved[k]
+        for k, default in pairs(data) do
+            local v = saved[k]
+            if type(v) == type(default) then
+                if type(v) ~= "number" or (v == v and v >= 0 and v < 1e12) then
+                    data[k] = v
+                end
             end
         end
     end

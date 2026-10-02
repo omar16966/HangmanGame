@@ -3,7 +3,7 @@
 A pixel-art Hangman word puzzle game made with **LÖVE2D + Lua**, with an
 Arabic (right-to-left) and English interface and Arabic and English puzzles.
 
-> **Development status:** Phases 1–4 (Foundation, Localization, Core gameplay, Main UI) are complete. See
+> **Development status:** Phases 1–5 (Foundation, Localization, Core gameplay, Main UI, Persistence) are complete. See
 > [Development phases](#development-phases). This README grows with each phase.
 
 ## Requirements
@@ -57,16 +57,37 @@ the *next* option, and sliders fill from the right.
 ## Screens
 
 ```text
+First launch: Language (interface, puzzle) -> Player name -> Main menu
+
 Boot -> Main menu -> Category (puzzle language, difficulty, category) -> Gameplay -> Results
              |                                                            |
-             +-- Settings (Gameplay / Audio / Graphics)            Pause (Esc / P):
-             +-- How to play, Credits, Language                    Resume, Restart round,
-             +-- Exit (with confirmation)                          Settings, Main menu
+             +-- Continue (a saved round)                          Pause (Esc / P):
+             +-- Scores, Statistics (+ Change name)                Resume, Restart round,
+             +-- Settings (Gameplay / Audio / Graphics)            Settings, Main menu
+             +-- How to play, Credits, Language                    (saves the round)
+             +-- Exit (with confirmation)
 ```
 
-Continue, Scores and Statistics are shown disabled until Phase 5 (saves).
-Settings take effect immediately and are saved from Phase 5. The audio
-settings take effect in Phase 7 and the shader settings in Phase 8.
+Settings take effect immediately and are saved. The audio settings take
+effect in Phase 7 and the shader settings in Phase 8.
+
+## How saves work
+
+Everything is saved automatically, in the LÖVE save folder (see
+[SAVE_FORMAT.md](SAVE_FORMAT.md) for the exact location and format):
+
+- **Settings, window size, fullscreen**: remembered between runs.
+- **Player name, statistics, high scores**: updated when a round or a game ends.
+- **Continue**: a round in progress is stored after every guess. Leaving it
+  through the pause menu, or closing the game, keeps it; **Continue** on the
+  main menu picks it up. Starting a new game over a saved one asks first.
+- **High scores** are recorded when a game ends (leaving the results screen,
+  starting another game, or closing the game), not after each round.
+- **Damaged save files** never crash the game: the damaged file is kept
+  aside and the newest backup is restored (the player is told).
+
+The save is written safely (a verified temporary file first, with rolling
+backups), so a crash or a full disk cannot destroy it.
 
 ## Project structure
 
@@ -74,10 +95,12 @@ settings take effect in Phase 7 and the shader settings in Phase 8.
 main.lua                 entry point (only forwards LÖVE callbacks to Game)
 conf.lua                 window / module configuration
 assets/                  art, audio, fonts, shaders (see ASSETS.md)
-src/core/                config, constants, logger, utils, input, settings,
+src/core/                config, constants, logger, utils, json, input, settings,
                          state manager, game loop, debug overlay, CLI options
 src/graphics/            renderer (virtual canvas + scaling), palette
-src/managers/            asset manager + manifest, localization manager
+src/managers/            asset manager + manifest, localization, puzzles, saving
+                         (save manager, profile, statistics, scores, progress,
+                         game flow)
 src/localization/        text API, Arabic shaper, bidi, UTF-8 helpers
 src/managers/puzzle_manager.lua  puzzle loading, validation, selection
 src/gameplay/            round rules, normalizer, scoring, session, scene,
@@ -159,7 +182,9 @@ plus the points of the round in progress.
 
 ## Development tools
 
-Command-line options (only when `Config.debug = true`):
+Command-line options (only when `Config.debug = true`). Options that change
+settings (`--lang`, `--set`) and `--fresh` never write to the real save;
+add `--profile NAME` to use (and write) a separate test save instead.
 
 ```sh
 love . --size 1920x1080          # start with this window size
@@ -167,6 +192,8 @@ love . --fullscreen
 love . --state diagnostics       # first state after boot
 love . --overlay                 # show the debug overlay
 love . --lang en                 # force the interface language (ar / en)
+love . --profile test            # separate save in profiles/test/ (for testing)
+love . --fresh                   # defaults, nothing is read or written
 love . --page 2                  # diagnostics: open the text test page
 love . --set puzzleLanguage=en   # change any setting (repeatable)
 love . --seed 42                 # fixed random seed
@@ -186,7 +213,8 @@ text page, and **L** toggles the interface language.
 tests/run_all.sh          # everything below
 luajit tests/unit_tests.lua
 luajit tests/gameplay_tests.lua      # rules, normalization, scoring, puzzles
-luajit tests/ui_tests.lua            # focus navigation, RTL widgets
+luajit tests/ui_tests.lua            # focus navigation, RTL widgets, text field
+luajit tests/save_tests.lua          # JSON, saving, damaged files, scores, statistics
 python3 tests/compare_reference.py   # Arabic shaping vs HarfBuzz, bidi vs python-bidi
 tools/run_checks.sh       # pixel-perfect screenshots at 7 window sizes
 ```
@@ -206,8 +234,8 @@ sharp square block and that the black bars are clean.
 | 2 | Localization: Arabic shaping, RTL/Bidi, dictionaries, language switching | ✅ Done |
 | 3 | Core gameplay: puzzles, guesses, normalization, virtual keyboard, physics character | ✅ Done |
 | 4 | Main UI: menus, gameplay screen, pause, results, settings | ✅ Done |
-| 5 | Persistence: saves, profile, statistics, scores, continue | ⏳ Next |
-| 6 | Progression: XP, levels, streaks, achievements | |
+| 5 | Persistence: saves, profile, statistics, scores, continue | ✅ Done |
+| 6 | Progression: XP, levels, streaks, achievements | ⏳ Next |
 | 7 | Polish: animations, transitions, particles, audio | |
 | 8 | Shaders: vignette, CRT, scanlines, noise | |
 | 9 | Content: Arabic and English puzzle packs, add-your-own-words feature | |
@@ -219,4 +247,4 @@ sharp square block and that the black bars are clean.
 - `ASSETS.md`: every art and audio file the game expects (technical details)
 - `LOCALIZATION.md`: Arabic shaping, RTL/bidi, adding translations and languages
 - `PUZZLES.md`: puzzle file format, categories, hints, difficulty, validation
-- `SAVE_FORMAT.md`: added in Phase 5
+- `SAVE_FORMAT.md`: save files, schema, safe writing, recovery, migrations

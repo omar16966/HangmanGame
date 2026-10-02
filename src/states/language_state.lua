@@ -2,7 +2,8 @@
 -- language. Headings are shown in both languages so anyone can read them
 -- (this screen is also the first-launch setup, Phase 5).
 --
--- Params: { returnTo = "pop" | stateName, firstLaunch = bool }
+-- Params: { returnTo = "pop" | stateName, returnParams = {...} (for that state),
+--           firstLaunch = bool }
 
 local Config = require("src.core.config")
 local Constants = require("src.core.constants")
@@ -70,7 +71,7 @@ function LanguageState:finish()
     if target == "pop" then
         StateManager.pop()
     else
-        StateManager.switch(target)
+        StateManager.switch(target, self.params.returnParams)
     end
 end
 

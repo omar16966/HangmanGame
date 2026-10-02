@@ -5,6 +5,7 @@ local Config = require("src.core.config")
 local Constants = require("src.core.constants")
 local StateManager = require("src.core.state_manager")
 local Input = require("src.core.input")
+local SaveManager = require("src.managers.save_manager")
 local Assets = require("src.managers.asset_manager")
 local Button = require("src.ui.button")
 local Panel = require("src.ui.panel")
@@ -41,7 +42,11 @@ function PauseState:build(params)
         end },
         { "SETTINGS", function() StateManager.push(S.SETTINGS, { overlay = true }) end },
         { "MAIN_MENU", function()
-            confirm("CONFIRM_ABANDON", function() StateManager.switch(S.MAIN_MENU) end)
+            -- The round was stored when the pause menu opened: Continue picks it up.
+            confirm("CONFIRM_LEAVE_SAVE", function()
+                SaveManager.save("leave game")
+                StateManager.switch(S.MAIN_MENU)
+            end)
         end },
     }
     local x = math.floor((VW - BUTTON_W) / 2)

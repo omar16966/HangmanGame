@@ -73,7 +73,8 @@ function Button:getState()
     if not self.enabled then return "disabled" end
     if self.pressed then return "pressed" end
     if self.hovered then return "hover" end
-    if self.focused then return "focused" end
+    -- The focus look is for keyboard use; with the mouse only the hovered button is highlighted.
+    if self.focused and Input.lastDevice == "keyboard" then return "focused" end
     return "normal"
 end
 

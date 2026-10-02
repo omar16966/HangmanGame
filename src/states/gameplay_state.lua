@@ -8,7 +8,9 @@
 --   keyboard     on-screen keyboard of the puzzle language
 --   bottom bar   remaining attempts (start side) / hint buttons (end side)
 --
--- Params: { language, category, difficulty } (defaults from Settings).
+-- Params: { language, category, difficulty } (defaults from Settings),
+-- replayPuzzleId (play this puzzle again), restore (a saved round to continue,
+-- see GameFlow.getResume).
 
 local State = require("src.states.state")
 local Config = require("src.core.config")
@@ -17,6 +19,7 @@ local Settings = require("src.core.settings")
 local Assets = require("src.managers.asset_manager")
 local Localization = require("src.managers.localization_manager")
 local PuzzleManager = require("src.managers.puzzle_manager")
+local GameFlow = require("src.managers.game_flow")
 local Palette = require("src.graphics.palette")
 local Placeholders = require("src.graphics.placeholders")
 local Renderer = require("src.graphics.renderer")
@@ -56,7 +59,11 @@ function GameplayState:enter(params)
     if not Config.difficulty[self.difficulty] then
         self.difficulty = "normal"
     end
-    Session.get()
+    self.restoreData = params.restore
+    local session = Session.get()
+    if session.language == "" then
+        session.language, session.difficulty, session.category = self.language, self.difficulty, self.category
+    end
 
     self.scene = Scene.new(SCENE_X, SCENE_Y)
     self:createButtons()
@@ -86,6 +93,7 @@ end
 
 function GameplayState:openPause()
     if self.round and not self.round:isFinished() then
+        self:saveSnapshot()
         StateManager.push(Constants.States.PAUSE, {
             gameplayParams = self:getParams(),
             puzzleId = self.round.puzzle.id,
@@ -125,27 +133,51 @@ function GameplayState:startRound()
     self.hintText = nil
     self.scoreResult = nil
 
-    -- "Replay" / "Restart round" play the same puzzle again.
-    local puzzle = self.replayPuzzleId and PuzzleManager.get(self.replayPuzzleId)
-    self.replayPuzzleId = nil
-    puzzle = puzzle or PuzzleManager.pick({
-        language = self.language,
-        category = self.category,
-        difficulty = self.difficulty,
-    })
-    if not puzzle then
-        self.round = nil
-        self.noPuzzles = true
-        return
+    -- A saved round (Continue): rebuild it by replaying the saved guesses.
+    local restored = nil
+    local restore = self.restoreData
+    self.restoreData = nil
+    if restore then
+        local saved = PuzzleManager.get(restore.puzzleId)
+        if saved then
+            restored = Round.restore(saved, restore, { random = love.math.random })
+            if restored:isFinished() then
+                restored = nil
+            end
+        end
     end
-    self.noPuzzles = false
-    PuzzleManager.markPlayed(puzzle.id)
 
-    self.round = Round.new(puzzle, {
-        maxWrongAttempts = Config.difficulty[self.difficulty].maxWrongAttempts,
-        random = love.math.random,
-    })
+    if restored then
+        self.round = restored
+        self.noPuzzles = false
+    else
+        -- "Replay" / "Restart round" play the same puzzle again.
+        local puzzle = self.replayPuzzleId and PuzzleManager.get(self.replayPuzzleId)
+        self.replayPuzzleId = nil
+        puzzle = puzzle or PuzzleManager.pick({
+            language = self.language,
+            category = self.category,
+            difficulty = self.difficulty,
+        })
+        if not puzzle then
+            self.round = nil
+            self.noPuzzles = true
+            return
+        end
+        self.noPuzzles = false
+        PuzzleManager.markPlayed(puzzle.id)
+        self.round = Round.new(puzzle, {
+            maxWrongAttempts = Config.difficulty[self.difficulty].maxWrongAttempts,
+            random = love.math.random,
+        })
+    end
     self.scene:reset()
+    if restored then
+        self.scene:setStage(Scene.stageFor(restored.wrong, restored.maxWrong))
+        if restored.textHintUsed then
+            self.hintText = PuzzleManager.getHint(restored.puzzle, Localization.getLanguage())
+        end
+    end
     self.wordDisplay = WordDisplay.new(self.round, { centerX = VW / 2, y = 0, maxWidth = VW - 2 * MARGIN })
     self.wordDisplay.area.y = WORD_BOTTOM - self.wordDisplay:getHeight()
     self.wordDisplay:layout()
@@ -161,6 +193,19 @@ function GameplayState:startRound()
     self.keyboard:setEnabled(true)
     self.keyboard:setStateProvider(function(key) return self.round:getKeyState(key) end)
     self:updateButtons()
+    self:saveSnapshot()
+end
+
+-- Remembers the round in progress, so the game can be continued later
+-- (also after the application was closed).
+function GameplayState:saveSnapshot()
+    if self.round and not self.round:isFinished() then
+        GameFlow.snapshot(self:getParams(), self.round)
+    end
+end
+
+function GameplayState:onQuit()
+    self:saveSnapshot()
 end
 
 function GameplayState:updateButtons()
@@ -186,9 +231,11 @@ function GameplayState:guess(input)
         self.keyboard:flashKey(result.key)
         self.wordDisplay:onReveal(result.positions)
         self.scene:onCorrect()
+        self:saveSnapshot()
     elseif result.status == "wrong" then
         self.keyboard:flashKey(result.key)
         self.scene:onWrong(Scene.stageFor(round.wrong, round.maxWrong))
+        self:saveSnapshot()
     elseif result.status == "repeat" then
         self:showMessage("ALREADY_GUESSED")
     elseif result.status == "invalid" then
@@ -207,6 +254,7 @@ function GameplayState:useTextHint()
     end
     self.hintText = PuzzleManager.getHint(self.round.puzzle, Localization.getLanguage())
     self:updateButtons()
+    self:saveSnapshot()
 end
 
 function GameplayState:useRevealHint()
@@ -219,6 +267,7 @@ function GameplayState:useRevealHint()
     self.wordDisplay:onReveal(reveal.positions)
     self.scene:onCorrect()
     self:updateButtons()
+    self:saveSnapshot()
 end
 
 function GameplayState:finishRound()
@@ -230,7 +279,7 @@ function GameplayState:finishRound()
     end
     self.wordDisplay:setFinished(round.status)
     self.scoreResult = Scoring.calculate(round, self.difficulty)
-    Session.recordRound(round, self.scoreResult)
+    GameFlow.recordRound(round, self.scoreResult)
     self.keyboard:setEnabled(false)
     self.finishTimer = round:isWon() and Config.gameplay.resultDelayWin or Config.gameplay.resultDelayLoss
     if round:isWon() then

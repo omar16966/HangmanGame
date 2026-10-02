@@ -134,6 +134,18 @@ Config.puzzles = {
     recentHistorySize = 30,
 }
 
+-- Saving (see SAVE_FORMAT.md). Files live in the LÖVE save folder, never in
+-- the game folder.
+Config.save = {
+    autosaveDelay = 1.0,     -- seconds after the last change before an automatic save
+    autosaveMaxWait = 5.0,   -- ...but never wait longer than this while changes keep coming
+    retryDelay = 5.0,        -- seconds before trying again after a failed write
+    maxScores = 200,         -- high-score entries kept
+    scoresShown = 10,        -- rows shown on the scores screen
+    nameMaxLength = 16,      -- characters in a player name
+    keepCorruptFiles = 3,    -- damaged save files kept for inspection
+}
+
 -- First state entered after the boot state finishes loading.
 Config.startState = "main_menu"
 

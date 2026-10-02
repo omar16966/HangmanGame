@@ -14,7 +14,7 @@ for size in 640x360 1280x720 1920x1080 2560x1440 1366x768 1000x700 800x450; do
     name="check_${STATE}_${size}.png"
     log="$OUT/${STATE}_${size}.log"
     timeout 30 xvfb-run -a -s "-screen 0 2600x1500x24" \
-        love . --size "$size" --state "$STATE" --screenshot "$name" \
+        love . --fresh --size "$size" --state "$STATE" --screenshot "$name" \
         --screenshot-after 1 --quit-after 1.5 >"$log" 2>&1
     if grep -E "ERROR|Error:|stack traceback" "$log" >/dev/null; then
         echo "FAIL $size: errors in log ($log)"

@@ -19,6 +19,7 @@ Constants.States = {
     HELP = "help",
     CREDITS = "credits",
     MODAL = "modal",
+    NAME = "name",
 }
 
 Constants.Languages = {

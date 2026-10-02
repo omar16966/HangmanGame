@@ -158,16 +158,39 @@ function Renderer.toggleFullscreen()
     Settings.set("fullscreen", enabled)
 end
 
-function Renderer.setWindowSize(w, h)
+function Renderer.setWindowSize(w, h, centered)
     if Renderer.isFullscreen() then
         Renderer.setFullscreen(false)
     end
-    local ok, err = pcall(love.window.updateMode, w, h)
+    local ok, err = pcall(love.window.updateMode, w, h, centered and { centered = true } or nil)
     if not ok then
         Logger.error("Could not resize window to %dx%d: %s", w, h, tostring(err))
         return
     end
     Renderer.resize(love.graphics.getDimensions())
+end
+
+-- Applies the window state saved by the player at startup. A saved window
+-- larger than the desktop is reduced to the biggest preset that fits.
+function Renderer.applySavedWindow(w, h, fullscreen)
+    if fullscreen then
+        Renderer.setFullscreen(true)
+        return
+    end
+    local desktopW, desktopH = love.window.getDesktopDimensions()
+    if w > desktopW or h > desktopH then
+        local best = Config.window.presets[1]
+        for _, size in ipairs(Config.window.presets) do
+            if size[1] <= desktopW and size[2] <= desktopH then
+                best = size
+            end
+        end
+        w, h = best[1], best[2]
+    end
+    local currentW, currentH = love.window.getMode()
+    if w ~= currentW or h ~= currentH then
+        Renderer.setWindowSize(w, h, true)
+    end
 end
 
 -- Info ------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ local Localization = require("src.managers.localization_manager")
 local Text = require("src.localization.text")
 local Palette = require("src.graphics.palette")
 local Session = require("src.gameplay.session")
+local GameFlow = require("src.managers.game_flow")
 local Button = require("src.ui.button")
 local Panel = require("src.ui.panel")
 local Icons = require("src.ui.icons")
@@ -40,7 +41,7 @@ function ResultState:build(params)
     local items = {
         { "NEXT_PUZZLE", function() playAgain(false) end },
         { "REPLAY", function() playAgain(true) end },
-        { "MAIN_MENU", function() StateManager.switch(S.MAIN_MENU) end },
+        { "MAIN_MENU", function() self:back() end },
     }
     self.buttons = {}
     for i, item in ipairs(items) do
@@ -52,7 +53,9 @@ function ResultState:build(params)
     self.ui:setFocus(self.buttons[1], true)
 end
 
+-- Leaving to the menu ends the game: its score goes to the high scores.
 function ResultState:back()
+    GameFlow.endSession(self.params.gameplayParams)
     StateManager.switch(S.MAIN_MENU)
 end
 

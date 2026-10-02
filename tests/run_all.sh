@@ -15,7 +15,14 @@ grep -v "^\[" "$log"; rm -f "$log"   # hide the expected validation warnings
 echo "== UI tests"
 log=$(mktemp); luajit tests/ui_tests.lua >"$log" 2>&1 || status=1
 grep -v "^\[" "$log"; rm -f "$log"
+echo "== Save and persistence tests"
+log=$(mktemp); luajit tests/save_tests.lua >"$log" 2>&1 || status=1
+grep -vE "^\[" "$log"; rm -f "$log"   # hide the expected warnings about damaged test files
 echo "== Reference tests";   python3 tests/compare_reference.py || status=1
-echo "== Display checks";    tools/run_checks.sh main_menu "${1:-/tmp/hangman_checks}" | grep -E "FAIL|non-uniform virtual pixels: [1-9]|letterbox pixels: [1-9]" && status=1
+echo "== Display checks"
+for state in main_menu gameplay category settings scores statistics name; do
+    tools/run_checks.sh $state "${1:-/tmp/hangman_checks}" 2>&1 \
+        | grep -E "FAIL|non-uniform virtual pixels: [1-9]|letterbox pixels: [1-9]" && { echo "problem in state $state"; status=1; }
+done
 [ $status -eq 0 ] && echo "ALL CHECKS PASSED" || echo "SOME CHECKS FAILED"
 exit $status

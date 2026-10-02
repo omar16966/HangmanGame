@@ -2,7 +2,7 @@
 -- Used through the "modal" overlay state:
 --
 --   StateManager.push("modal", {
---       messageKey = "CONFIRM_ABANDON",
+--       messageKey = "CONFIRM_RESTART",
 --       buttons = { { textKey = "YES", value = true }, { textKey = "NO", value = false } },
 --       cancelValue = false,          -- result of BACK / Esc
 --       onResult = function(value) ... end,

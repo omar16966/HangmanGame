@@ -8,16 +8,48 @@ local Localization = require("src.managers.localization_manager")
 local PuzzleManager = require("src.managers.puzzle_manager")
 local Normalizer = require("src.gameplay.normalizer")
 local Config = require("src.core.config")
+local Constants = require("src.core.constants")
+local Settings = require("src.core.settings")
+local SaveManager = require("src.managers.save_manager")
 local Palette = require("src.graphics.palette")
 local Renderer = require("src.graphics.renderer")
 local Logger = require("src.core.logger")
 
 local BootState = State.extend("boot")
 
--- Each step is { name, fn(params) }. Later phases add save loading,
--- audio and shaders here.
+-- Loads the save, then applies development overrides (they win over saved
+-- values) and the saved window state.
+local function loadSave(params)
+    SaveManager.load()
+    if params.lang then
+        Settings.set("interfaceLanguage", params.lang)
+    end
+    for _, pair in ipairs(params.settings or {}) do
+        Settings.set(pair[1], pair[2])
+    end
+    if not params.windowOverride then
+        Renderer.applySavedWindow(Settings.get("windowWidth"), Settings.get("windowHeight"),
+            Settings.get("fullscreen"))
+    end
+
+    -- First launch: language setup, then the player's name.
+    local S = Constants.States
+    if params.nextState then
+        return
+    end
+    if SaveManager.isFirstLaunch() then
+        params.nextState = S.LANGUAGE
+        params.nextParams = { firstLaunch = true, returnTo = S.NAME,
+            returnParams = { firstLaunch = true, returnTo = S.MAIN_MENU } }
+    else
+        params.nextState = Config.startState
+    end
+end
+
+-- Each step is { name, fn(params) }. Audio and shaders add steps in later phases.
 local steps = {
     { "assets", function() Assets.load() end },
+    { "save", loadSave },
     { "localization", function() Localization.init() end },
     { "puzzles", function()
         Normalizer.configure(Config.normalization.arabic)

@@ -49,7 +49,6 @@ return {
     RESUME = "متابعة",
     RESTART_ROUND = "إعادة الجولة",
     MAIN_MENU = "القائمة الرئيسية",
-    CONFIRM_ABANDON = "هل تريد مغادرة الجولة الحالية؟ سيضيع تقدمك فيها.",
 
     -- Gameplay
     SCORE = "النقاط",
@@ -120,7 +119,6 @@ return {
     PERCENT = "{value}٪",
 
     -- Menus (Phase 4)
-    COMING_SOON = "متاح في تحديث قادم.",
     CONFIRM_EXIT = "هل تريد الخروج من اللعبة؟",
     CONFIRM_RESTART = "إعادة هذه الجولة؟ سيضيع تقدمك فيها.",
     CHOOSE_CATEGORY = "اختر الفئة",
@@ -157,4 +155,29 @@ return {
     CREDITS_ENGINE = "صنعت باستخدام LÖVE",
     CREDITS_FONT = "الخط: Pixel AE",
     CREDITS_THANKS = "شكرا للعب!",
+
+    -- Saving, profile, scores (Phase 5)
+    DEFAULT_PLAYER_NAME = "لاعب",
+    PLAYER_NAME = "اسم اللاعب",
+    ENTER_NAME = "أدخل اسمك",
+    CHANGE_NAME = "تغيير الاسم",
+    SKIP = "تخطي",
+    NAME_HINT = "حتى {count} حرفا",
+    TOP_SCORES = "أفضل النتائج",
+    NO_SCORES = "لا توجد نتائج بعد. أكمل لعبة لتسجيل نتيجتك!",
+    FILTER_ALL = "الكل",
+    COL_RANK = "الترتيب",
+    COL_NAME = "الاسم",
+    COL_SCORE = "النقاط",
+    COL_LANGUAGE = "اللغة",
+    COL_DIFFICULTY = "الصعوبة",
+    COL_ROUNDS = "الفوز",
+    COL_DATE = "التاريخ",
+    TIME_HMS = "{hours}:{minutes}:{seconds}",
+    NO_SAVED_GAME = "لا توجد لعبة محفوظة للمتابعة.",
+    CONFIRM_REPLACE_SAVE = "بدء لعبة جديدة سيستبدل لعبتك المحفوظة. هل تريد المتابعة؟",
+    CONFIRM_LEAVE_SAVE = "هل تريد حفظ اللعبة والعودة إلى القائمة الرئيسية؟ يمكنك متابعة هذه الجولة لاحقا.",
+    SAVE_RECOVERED = "كان ملف الحفظ تالفا، فتمت استعادة تقدمك من نسخة احتياطية.",
+    SAVE_RESET = "تعذرت قراءة ملف الحفظ فبدأنا ملفا جديدا. تم الاحتفاظ بالملف التالف.",
+    SAVE_FAILED = "تعذر حفظ تقدمك. تحقق من مساحة القرص الحرة وصلاحيات المجلد.",
 }

@@ -8,7 +8,8 @@
 --          --screenshot-after 1.5      ...after this many seconds (default 1)
 --   love . --quit-after 2              quit automatically
 --   love . --overlay                   show the debug overlay
---   love . --fresh                     ignore the existing save (testing)
+--   love . --fresh                     ignore the existing save and do not write any (testing)
+--   love . --profile test              use a separate save in profiles/test/ (testing)
 --   love . --lang en                   force the interface language
 --   love . --page 2                    page passed to the first state (diagnostics)
 --   love . --set puzzleLanguage=en     change a setting (repeatable)
@@ -46,6 +47,9 @@ function Cli.parse(args)
             options.overlay = true
         elseif a == "--fresh" then
             options.fresh = true
+        elseif a == "--profile" and args[i + 1] then
+            options.profile = args[i + 1]
+            i = i + 1
         elseif a == "--lang" and args[i + 1] then
             options.lang = args[i + 1]
             i = i + 1

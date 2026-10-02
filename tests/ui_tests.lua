@@ -11,6 +11,8 @@ local Selector = require("src.ui.selector")
 local Slider = require("src.ui.slider")
 local Toggle = require("src.ui.toggle")
 local Tabs = require("src.ui.tabs")
+local TextInput = require("src.ui.text_input")
+local Profile = require("src.managers.profile_manager")
 
 local passed, failed = 0, 0
 local function check(name, actual, expected)
@@ -98,6 +100,37 @@ Settings.set("interfaceLanguage", "ar")
 tabs:onAction(A.RIGHT); check("tabs rtl right goes back", changed, 1)
 local x1 = tabs:tabRect(1)
 check("rtl first tab is on the right", x1, 200)
+
+-- Text input ------------------------------------------------------------------------------------------
+local typed = ""
+local submitted = false
+local field = TextInput.new({ x = 0, y = 0, w = 200, h = 24, maxLength = 5,
+    get = function() return typed end, set = function(v) typed = v end,
+    filter = Profile.filterTyping, onSubmit = function() submitted = true end })
+field:onTextInput("ab"); field:onTextInput("c")
+check("text typed", typed, "abc")
+field:onTextInput("defgh")
+check("text limited to max length", typed, "abcde")
+field:onTextInput("z")
+check("text full ignores more", typed, "abcde")
+field:onKey("backspace")
+check("backspace removes one", typed, "abcd")
+typed = "عمر"
+field:onKey("backspace")
+check("backspace removes a whole arabic letter", typed, "عم")
+field:onKey("backspace"); field:onKey("backspace"); field:onKey("backspace")
+check("backspace on empty text", typed, "")
+field:onTextInput(" ")
+check("leading space filtered", typed, "")
+field:onTextInput("a"); field:onTextInput(" ")
+check("a space can be typed after a word", typed, "a ")
+field:onTextInput(" "); field:onTextInput("b")
+check("repeated spaces collapse", typed, "a b")
+check("keys other than backspace not used", field:onKey("a"), false)
+field:onAction(A.CONFIRM)
+check("confirm submits", submitted, true)
+field:setEnabled(false)
+check("disabled field ignores text", field:onTextInput("x"), false)
 
 print(string.format("%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)

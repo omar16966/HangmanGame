@@ -37,6 +37,10 @@ function State:mousereleased(x, y, button, inside) return false end
 function State:mousemoved(x, y, dx, dy, inside) return false end
 function State:wheelmoved(dx, dy) return false end
 
+-- Called for every state on the stack when the application is closing
+-- (the gameplay state stores the round in progress here).
+function State:onQuit() end
+
 -- Extra lines for the debug overlay (list of strings) or nil.
 function State:debugInfo() return nil end
 

@@ -11,6 +11,12 @@ local StateManager = require("src.core.state_manager")
 local DebugOverlay = require("src.core.debug_overlay")
 local Renderer = require("src.graphics.renderer")
 local Cursor = require("src.ui.cursor")
+local SaveManager = require("src.managers.save_manager")
+local GameFlow = require("src.managers.game_flow")
+local Profile = require("src.managers.profile_manager")
+local Stats = require("src.managers.stats_manager")
+local Scores = require("src.managers.score_manager")
+local Progress = require("src.managers.progress_manager")
 
 local Game = {}
 
@@ -32,6 +38,9 @@ local function registerStates()
     StateManager.register(S.HELP, require("src.states.help_state"))
     StateManager.register(S.CREDITS, require("src.states.credits_state"))
     StateManager.register(S.MODAL, require("src.states.modal_state"))
+    StateManager.register(S.NAME, require("src.states.name_state"))
+    StateManager.register(S.SCORES, require("src.states.scores_state"))
+    StateManager.register(S.STATISTICS, require("src.states.statistics_state"))
 end
 
 function Game.load(args)
@@ -61,28 +70,39 @@ function Game.load(args)
     DebugOverlay.init()
     DebugOverlay.setVisible(options.overlay == true)
 
-    -- Keep the window in sync with the fullscreen setting, whoever changes it.
+    -- Keep the window in sync with the fullscreen setting, whoever changes it,
+    -- and save every settings change (a moment later, see SaveManager).
     Settings.onChange(function(key, value)
         if key == "fullscreen" and value ~= Renderer.isFullscreen() then
             Renderer.setFullscreen(value)
         end
+        SaveManager.markDirty()
     end)
 
+    -- Saving. Development options that change settings never write to the
+    -- real save, unless a separate --profile is used.
+    local overridesSettings = options.lang ~= nil or options.settings ~= nil
+    SaveManager.init({
+        profile = options.profile,
+        readOnly = options.fresh == true or (overridesSettings and not options.profile),
+    })
+    SaveManager.register("player", Profile)
+    SaveManager.register("settings", Settings)
+    SaveManager.register("stats", Stats)
+    SaveManager.register("scores", Scores)
+    SaveManager.register("progress", Progress)
+
     registerStates()
-    if options.lang then
-        Settings.set("interfaceLanguage", options.lang)
-    end
-    for _, pair in ipairs(options.settings or {}) do
-        Settings.set(pair[1], pair[2])
-    end
     if options.seed then
         love.math.setRandomSeed(options.seed)
     end
 
     StateManager.switch(Constants.States.BOOT, {
-        nextState = options.state or Config.startState,
+        nextState = options.state,
         nextParams = { page = options.page },
-        fresh = options.fresh,
+        lang = options.lang,
+        settings = options.settings,
+        windowOverride = options.width ~= nil or options.fullscreen == true,
     })
 end
 
@@ -106,6 +126,7 @@ function Game.update(dt)
     dt = math.min(dt, 1 / 15)
     Renderer.update(dt)
     StateManager.update(dt)
+    SaveManager.update(dt)
     Cursor.update()
     updateAutomation(dt)
 end
@@ -203,10 +224,22 @@ end
 function Game.resize(w, h)
     Renderer.resize(w, h)
     Input.refreshMouse()
+    -- Remember the window size chosen by the player (not the fullscreen size).
+    if not Renderer.isFullscreen() then
+        Settings.set("windowWidth", w)
+        Settings.set("windowHeight", h)
+    end
 end
 
 function Game.quit()
     Logger.info("Shutting down")
+    -- Store the round in progress, keep the score of a finished game, save.
+    StateManager.notifyQuit()
+    GameFlow.finalizeOnQuit({
+        language = Settings.get("puzzleLanguage"),
+        difficulty = Settings.get("difficulty"),
+    })
+    SaveManager.flush()
     return false -- false = allow the application to close
 end
 
